@@ -1,3 +1,4 @@
 export const SERVICES = {
-    messages: 'messageService'
+    messages: 'messageService',
+    registration: 'registrationService'
 }

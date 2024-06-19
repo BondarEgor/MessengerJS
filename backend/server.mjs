@@ -5,7 +5,9 @@ import {diContainer} from './di/di.mjs';
 import {messageService} from './services/message-service.mjs';
 import {SERVICES} from './di/api.mjs';
 import {chatController} from './controllers/chat-controller.mjs';
+import { registrationController } from './controllers/registration-controller.mjs';
 import swaggerJSDoc from 'swagger-jsdoc';
+import { registrationService } from './services/registration-service.mjs'
 
 const app = express();
 
@@ -31,9 +33,11 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 diContainer.register(SERVICES.messages, messageService);
 
+diContainer.register(SERVICES.registration,registrationService)
 
 // Метод GET возвращает массив случайных сообщений для chatId
 app.get('/messages/:chatId', chatController);
+app.get('/registration', registrationController)
 
 const PORT = 3000;
 app.listen(PORT, () => {

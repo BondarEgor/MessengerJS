@@ -31,7 +31,7 @@ import {SERVICES} from '../di/api.mjs';
  *                     type: string
  *                     description: Текст сообщения
  */
-export function chatController(req, res) {
+export function  chatController(req, res) {
     const messageService = diContainer.resolve(SERVICES.messages);
     const {chatId} = req.params;
     const messages = messageService.getMessages(chatId);

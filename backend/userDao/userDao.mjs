@@ -1,8 +1,11 @@
-import { error } from 'console'
 import fs from 'fs/promises'
+import { fileURLToPath } from 'url'
+import path from 'path'
 
+const _filename = fileURLToPath(import.meta.url)
+const _dirname = path.dirname(_filename)
 export default class UserDao {
-	#filePath = '../users.json'
+	#filePath = path.join(_dirname, '../users.json')
 
 	async readUsersFromFile() {
 		try {
@@ -18,8 +21,10 @@ export default class UserDao {
 	}
 
 	async saveUsersToFile(users) {
-		return fs.writeFile(this.#filePath, JSON.stringify(users, null, 2))
+		console.log(this.#filePath)
+		return await fs.writeFile(this.#filePath, JSON.stringify(users))
 	}
+
 	isUserExists(users, username) {
 		return users.find(user => user.username === username)
 	}
@@ -31,7 +36,7 @@ export default class UserDao {
 		if (isExists) {
 			throw new Error('User already exists')
 		}
-		const newUser = { id: users.length++, ...userData }
+		const newUser = { id: users.length + 1, ...userData }
 		users.push(newUser)
 		await this.saveUsersToFile(users)
 		return newUser
@@ -45,7 +50,7 @@ export default class UserDao {
 	async deleteUser(userId) {
 		const users = await this.readUsersFromFile()
 		const userIndex = users.findIndex(user => user.id === userId)
-		if (!userIndex == -1) {
+		if (userIndex == -1) {
 			throw new Error('User not found')
 		}
 		const deletedUser = users.splice(userIndex, 1)[0]
@@ -53,7 +58,7 @@ export default class UserDao {
 		return deletedUser
 	}
 
-	updateUser(userId, updateDate) {
+	async updateUser(userId, updateDate) {
 		const users = this.readUsersFromFile()
 		//Ищем индекс, потому что юзеры могут быть в любом порядке
 		const userIndex = users.findIndex(user => user.id === userId)
@@ -62,7 +67,7 @@ export default class UserDao {
 			throw new Error('User not found ')
 		}
 		users[userIndex] = { ...users[userIndex], ...updateDate }
-		this.saveUsersToFile(users)
+		await this.saveUsersToFile(users)
 		return users[userIndex]
 	}
 }

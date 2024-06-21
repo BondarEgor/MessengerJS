@@ -49,9 +49,9 @@ export function registrationController(req, res) {
 	const registrationService = diContainer.resolve(SERVICES.registration)
 	const { username, password, email } = req.params
 	const isSuccess = registrationService.getRegisteredUser(
-		"username",
-		"password",
-		"email"
+		username,
+		password,
+		email
 	)
 	res.json(isSuccess)
 }

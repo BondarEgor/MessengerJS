@@ -1,5 +1,5 @@
 const PATHS = {
-	users: 'users.mjs'
+	users: '/users.mjs'
 }
 
 export default PATHS

@@ -31,9 +31,7 @@ class UserDao {
 		try {
 			const users = await this.readUsersFromFile() || []
 			const { username } = userData
-			console.log(users)
 			const isExists = this.isUserExists(users, username)
-			console.log(isExists)
 			if (isExists) {
 				throw new Error('User already exists')
 			}

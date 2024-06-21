@@ -1,27 +1,22 @@
 import fs from 'fs/promises'
 import { fileURLToPath } from 'url'
 import path from 'path'
-
+import PATHS from '../constants.js'
 const _filename = fileURLToPath(import.meta.url)
 const _dirname = path.dirname(_filename)
-export default class UserDao {
-	#filePath = path.join(_dirname, '../users.json')
+class UserDao {
+	#filePath = path.join(_dirname, PATHS.users)
 
 	async readUsersFromFile() {
 		try {
-			const data = await fs.readFile(this.#filePath, 'utf-8')
+			await fs.readFile(this.#filePath, 'utf-8')
 			return JSON.parse(data)
 		} catch (error) {
-			//Ошибка, что файл не существует
-			if (error.code === 'ENOENT') {
-				return []
-			}
 			throw new Error('Failed to read file')
 		}
 	}
 
 	async saveUsersToFile(users) {
-		console.log(this.#filePath)
 		return await fs.writeFile(this.#filePath, JSON.stringify(users))
 	}
 
@@ -30,16 +25,23 @@ export default class UserDao {
 	}
 
 	async createUser(userData) {
-		const users = await this.readUsersFromFile()
-		const { username } = userData
-		const isExists = this.isUserExists(users, username)
-		if (isExists) {
-			throw new Error('User already exists')
+		try {
+			console.log(this.#filePath)
+			const users = await this.readUsersFromFile()
+			const { username } = userData
+			const isExists = this.isUserExists(users, username)
+			if (isExists) {
+				throw new Error('User already exists')
+			}
+			const newUser = { id: users.length + 1, ...userData }
+			users.push(newUser)
+			await fs.writeFile(this.#filePath, JSON.stringify([]))
+			return newUser
+		} catch (error) {
+			if (error === 'ENOENT') {
+				await fs.writeFile('users.json', JSON.stringify([userData]))
+			}
 		}
-		const newUser = { id: users.length + 1, ...userData }
-		users.push(newUser)
-		await this.saveUsersToFile(users)
-		return newUser
 	}
 
 	async getUser(userId) {
@@ -70,4 +72,8 @@ export default class UserDao {
 		await this.saveUsersToFile(users)
 		return users[userIndex]
 	}
+}
+
+export default function userDaoFactory() {
+	return new UserDao()
 }

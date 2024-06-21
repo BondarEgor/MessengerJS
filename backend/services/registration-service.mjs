@@ -1,9 +1,9 @@
 import bcrypt from 'bcrypt'
-import UserDao from '../userDao/userDao.mjs'
+import { diContainer } from '../di/di.mjs'
+import { SERVICES } from '../di/api.mjs'
 
 export function registrationService() {
-	const userDao = new UserDao()
-
+	const userDao = diContainer.resolve(SERVICES.dao)
 	async function registerUser(username, password, email) {
 		try {
 			const hashedPassword = await hashPassword(password)

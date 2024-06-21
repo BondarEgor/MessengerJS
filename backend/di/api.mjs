@@ -1,4 +1,5 @@
 export const SERVICES = {
-    messages: 'messageService',
-    registration: 'registrationService'
+	messages: 'messageService',
+	registration: 'registrationService',
+    dao: 'userDaoFactory'
 }

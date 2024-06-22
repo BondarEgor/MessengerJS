@@ -1,5 +1,5 @@
-import { diContainer } from '../di/di.mjs'
-import { SERVICES } from '../di/api.mjs'
+import { diContainer } from '../di/di.mjs';
+import { SERVICES } from '../di/api.mjs';
 
 /**
  * @swagger
@@ -31,9 +31,10 @@ import { SERVICES } from '../di/api.mjs'
  *                     type: string
  *                     description: Текст сообщения
  */
+
 export function chatController(req, res) {
-	const messageService = diContainer.resolve(SERVICES.messages)
-	const { chatId } = req.params
-	const messages = messageService.getMessages(chatId)
-	res.json(messages)
+  const messageService = diContainer.resolve(SERVICES.messages);
+  const { chatId } = req.params;
+  const messages = messageService.getMessages(chatId);
+  res.json(messages);
 }

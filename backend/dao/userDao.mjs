@@ -1,79 +1,93 @@
-import fs from 'fs/promises'
-import path from 'path'
-import PATHS from '../constants.js'
-import { fileURLToPath } from 'url'
+import fs from 'fs/promises';
+import path from 'path';
+import PATHS from '../constants.js';
+import { fileURLToPath } from 'url';
+import { v4 as uuid } from 'uuid';
 
-const _filename = fileURLToPath(import.meta.url)
-const _dirname = path.dirname(_filename)
+const _filename = fileURLToPath(import.meta.url);
+const _dirname = path.dirname(_filename);
+
 class UserDao {
-	#filePath = path.join(_dirname,'../data', PATHS.users)
+  #filePath = path.join(_dirname, '../data', PATHS.users);
 
-	async readUsersFromFile() {
-		try {
-			const data = await fs.readFile(this.#filePath, 'utf-8')
-			return JSON.parse(data)
-		} catch (error) {
-			if(error === 'ENOENT')
-				await fs.writeFile(this.#filePath, JSON.stringify([]))
-		}
-	}
+  async readUsersFromFile() {
+    try {
+      const data = await fs.readFile(this.#filePath, 'utf-8');
+      return JSON.parse(data);
+    } catch (error) {
+      if (error === 'ENOENT')
+        await fs.writeFile(this.#filePath, JSON.stringify([]));
+    }
+  }
 
-	async saveUsersToFile(users) {
-		await fs.writeFile(this.#filePath, JSON.stringify(users))
-		return data
-	}
+  async saveUsersToFile(users) {
+    await fs.writeFile(this.#filePath, JSON.stringify(users, null, 2));
+  }
 
-	isUserExists(users, username) {
-		return users?.find(user => user.username === username)
-	}
+  isUserExists(users, userId) {
+    return !!users[userId];
+  }
 
-	async createUser(userData) {
-		try {
-			const users = await this.readUsersFromFile() || []
-			const { username } = userData
-			const isExists = this.isUserExists(users, username)
-			if (isExists) {
-				throw new Error('User already exists')
-			}
-			const newUser = { id: (users?.length ?? 0) + 1, ...userData }
-			users.push(newUser)
-			await fs.writeFile(this.#filePath, JSON.stringify(users))
-			return newUser
-		} catch (error) {
-			console.log(error)
-		}
-	}
+  async createUser(userData) {
+    try {
+      const users = (await this.readUsersFromFile()) || {};
+      const { username } = userData;
+      const isExists = this.isUserExists(users, username);
 
-	async getUser(userId) {
-		const users = await this.readUsersFromFile()
-		return users.find(user => user.id === userId)
-	}
+      if (isExists) {
+        throw new Error('User already exists');
+      }
 
-	async deleteUser(userId) {
-		const users = await this.readUsersFromFile()
-		const userIndex = users.findIndex(user => user.id === userId)
-		if (userIndex == -1) {
-			throw new Error('User not found')
-		}
-		const deletedUser = users.splice(userIndex, 1)[0]
-		await this.saveUsersToFile(users)
-		return deletedUser
-	}
+      const newUserId = uuid();
+      users[newUserId] = { ...userData };
+      await fs.writeFile(this.#filePath, JSON.stringify(users));
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
 
-	async updateUser(userId, updateDate) {
-		const users = this.readUsersFromFile()
-		//Ищем индекс, потому что юзеры могут быть в любом порядке
-		const userIndex = users.findIndex(user => user.id === userId)
+  async getUser(userId) {
+    const users = await this.readUsersFromFile();
+    return users[userId];
+  }
 
-		if (userIndex === -1) {
-			throw new Error('User not found ')
-		}
-		users[userIndex] = { ...users[userIndex], ...updateDate }
-		await this.saveUsersToFile(users)
-		return users[userIndex]
-	}
+  async deleteUser(userId) {
+    try {
+      const users = await this.readUsersFromFile();
+
+      if (this.isUserExists(users, userId)) {
+        delete users[userId];
+        await this.saveUsersToFile(users);
+        return true;
+      } else {
+        throw new Error(`User with id ${userId} not found`);
+      }
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  async updateUser(userId, updateData) {
+    try {
+      const users = await this.readUsersFromFile();
+
+      if (this.isUserExists(users, userId)) {
+        users[userId] = { ...users[userId], ...updateData };
+        this.saveUsersToFile(users);
+        return true;
+      } else {
+        throw new Error(`User with ${userId} not found`);
+      }
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
 }
 
 export default function userDaoFactory() {
-	return new UserDao()
+  return new UserDao();
 }

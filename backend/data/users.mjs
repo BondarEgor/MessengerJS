@@ -1,1 +1,0 @@
-[{"id":1,"username":"username123","password":"$2b$10$NZLurEnIieef.iHbmN01Le70DVRCE2ukzbfuw6VbQeZZ0xADTGJfe","email":"email"}]

@@ -1,5 +1,5 @@
 const PATHS = {
-	users: '/users.mjs'
-}
+  users: '/users.json',
+};
 
-export default PATHS
+export default PATHS;

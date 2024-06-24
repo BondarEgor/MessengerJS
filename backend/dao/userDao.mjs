@@ -7,7 +7,7 @@ import { v4 as uuid } from 'uuid';
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
 
-class UserDao {
+export class UserDao {
   #filePath = path.join(_dirname, '../data', PATHS.users);
 
   async readUsersFromFile() {
@@ -86,8 +86,4 @@ class UserDao {
       return false;
     }
   }
-}
-
-export default function userDaoFactory() {
-  return new UserDao();
 }

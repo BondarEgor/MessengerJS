@@ -1,14 +1,14 @@
-import express from 'express';
 import cors from 'cors';
+import express from 'express';
+import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import { diContainer } from './di/di.mjs';
-import { messageService } from './services/message-service.mjs';
-import { SERVICES } from './di/api.mjs';
 import { chatController } from './controllers/chat-controller.mjs';
 import { registrationController } from './controllers/registration-controller.mjs';
-import swaggerJSDoc from 'swagger-jsdoc';
-import { registrationService } from './services/registration-service.mjs';
-import userDaoFactory from './dao/userDao.mjs';
+import { UserDao } from './dao/userDao.mjs';
+import { SERVICES } from './di/api.mjs';
+import { diContainer } from './di/di.mjs';
+import { messageService } from './services/message-service.mjs';
+import { authService } from './services/registration-service.mjs';
 const app = express();
 
 // Использование CORS middleware для разрешения кросс-доменных запросов
@@ -30,9 +30,9 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-diContainer.register(SERVICES.dao, userDaoFactory);
+diContainer.register(SERVICES.dao, new UserDao());
 diContainer.register(SERVICES.messages, messageService);
-diContainer.register(SERVICES.registration, registrationService);
+diContainer.register(SERVICES.registration, authService);
 
 // Метод GET возвращает массив случайных сообщений для chatId
 app.get('/messages/:chatId', chatController);

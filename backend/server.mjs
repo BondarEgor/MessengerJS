@@ -8,7 +8,7 @@ import { UserDao } from './dao/userDao.mjs';
 import { SERVICES } from './di/api.mjs';
 import { diContainer } from './di/di.mjs';
 import { messageService } from './services/message-service.mjs';
-import { registrationService } from './services/registration-service.mjs';
+import { userService } from './services/registration-service.mjs';
 const app = express();
 
 // Использование CORS middleware для разрешения кросс-доменных запросов
@@ -28,11 +28,11 @@ const swaggerOptions = {
 };
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
-app.use('api/v1/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 diContainer.register(SERVICES.userDao, new UserDao());
 diContainer.register(SERVICES.messages, messageService);
-diContainer.register(SERVICES.registration, registrationService);
+diContainer.register(SERVICES.registration, userService);
 
 // Метод GET возвращает массив случайных сообщений для chatId
 app.get('api/v1/messages/:chatId', chatController);

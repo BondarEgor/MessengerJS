@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 
-export function registrationService() {
+export function userService() {
   const userDao = diContainer.resolve(SERVICES.userDao);
 
   async function registerUser(username, password, email) {

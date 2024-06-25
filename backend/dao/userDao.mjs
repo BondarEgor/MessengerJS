@@ -40,6 +40,7 @@ export class UserDao {
 
       const newUserId = uuid();
       users[newUserId] = { ...userData };
+
       await fs.writeFile(this.#filePath, JSON.stringify(users));
       return true;
     } catch (error) {
@@ -50,6 +51,7 @@ export class UserDao {
 
   async getUser(userId) {
     const users = await this.readUsersFromFile();
+    
     return users[userId];
   }
 
@@ -66,6 +68,7 @@ export class UserDao {
       }
     } catch (error) {
       console.error(error);
+      
       return false;
     }
   }
@@ -83,6 +86,7 @@ export class UserDao {
       }
     } catch (error) {
       console.error(error);
+
       return false;
     }
   }

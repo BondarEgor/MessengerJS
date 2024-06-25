@@ -2,8 +2,9 @@ import bcrypt from 'bcrypt';
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 
-export function authService() {
-  const userDao = diContainer.resolve(SERVICES.dao);
+export function registrationService() {
+  const userDao = diContainer.resolve(SERVICES.userDao);
+
   async function registerUser(username, password, email) {
     try {
       const hashedPassword = await hashPassword(password);
@@ -12,7 +13,9 @@ export function authService() {
         password: hashedPassword,
         email,
       };
+
       const newUser = await userDao.createUser(userData);
+
       if (newUser) {
         return true;
       } else {
@@ -23,6 +26,7 @@ export function authService() {
       return false;
     }
   }
+
   return { getRegisteredUser: registerUser };
 }
 

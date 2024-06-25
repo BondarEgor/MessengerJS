@@ -51,7 +51,7 @@ export class UserDao {
 
   async getUser(userId) {
     const users = await this.readUsersFromFile();
-    
+
     return users[userId];
   }
 
@@ -68,7 +68,7 @@ export class UserDao {
       }
     } catch (error) {
       console.error(error);
-      
+
       return false;
     }
   }

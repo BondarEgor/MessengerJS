@@ -46,7 +46,7 @@ import { diContainer } from '../di/di.mjs';
  */
 
 export function registrationController(req, res) {
-  const userService = diContainer.resolve(SERVICES.registration);
+  const userService = diContainer.resolve(SERVICES.users);
   const { username, password, email } = req.params;
   const isSuccess = userService.getRegisteredUser(username, password, email);
   res.json(isSuccess);

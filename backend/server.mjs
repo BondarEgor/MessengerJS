@@ -32,11 +32,11 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 diContainer.register(SERVICES.userDao, new UserDao());
 diContainer.register(SERVICES.messages, messageService);
-diContainer.register(SERVICES.registration, userService);
+diContainer.register(SERVICES.users, userService);
 
 // Метод GET возвращает массив случайных сообщений для chatId
-app.get('api/v1/messages/:chatId', chatController);
-app.get('api/v1/registration', registrationController);
+app.get('/api/v1/messages/:chatId', chatController);
+app.get('/api/v1/registration', registrationController);
 
 const PORT = 3000;
 app.listen(PORT, () => {

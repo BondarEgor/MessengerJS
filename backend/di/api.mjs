@@ -1,3 +1,5 @@
 export const SERVICES = {
-    messages: 'messageService'
-}
+  messages: 'messageService',
+  users: 'userService',
+  userDao: 'UserDao',
+};

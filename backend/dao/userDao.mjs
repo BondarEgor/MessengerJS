@@ -49,10 +49,14 @@ export class UserDao {
     }
   }
 
-  async getUser(userId) {
+  async getUser(username) {
     const users = await this.readUsersFromFile();
-
-    return users[userId];
+    for (const key in users) {
+      if (users[key].username === username) {
+        return users[key];
+      }
+    }
+    return null;
   }
 
   async deleteUser(userId) {

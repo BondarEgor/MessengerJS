@@ -30,7 +30,7 @@ export function userService() {
   return { getRegisteredUser: registerUser };
 }
 
-async function hashPassword(password) {
+export async function hashPassword(password) {
   const saltRounds = 10;
   const salt = await bcrypt.genSaltSync(saltRounds);
   const hash = await bcrypt.hash(password, salt);

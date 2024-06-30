@@ -2,7 +2,6 @@ import fs from 'fs/promises';
 import path from 'path';
 import PATHS from '../constants.js';
 import { fileURLToPath } from 'url';
-import { v4 as uuid } from 'uuid';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);

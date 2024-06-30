@@ -36,9 +36,23 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 
-export function authorizationController(req, res) {
+export function createAuthController(app) {
   const authService = diContainer.resolve(SERVICES.authorization);
-  const { username, password } = req.params;
-  const isSuccess = authService.isAuthenticated(username, password);
-  res.json(isSuccess);
+  const sessionService = diContainer.resolve(SERVICES.sessions);
+
+  app.post('/api/v1/login', async (req, res) => {
+    const { username, password } = req.body;
+    const isSuccess = await authService.authorizeUser(username, password);
+
+    if (isSuccess) {
+      const sessionId = await sessionService.generateSessionInfo(
+        username,
+        password
+      );
+
+      res.json(sessionId);
+    } else {
+      res.status(401).json('Unauthorized');
+    }
+  });
 }

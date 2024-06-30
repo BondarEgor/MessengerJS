@@ -1,14 +1,17 @@
 import bcrypt from 'bcrypt';
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
+import { v4 as uuidv4 } from 'uuid';
 
 export function userService() {
   const userDao = diContainer.resolve(SERVICES.userDao);
 
-  async function registerUser(username, password, email) {
+  async function registerNewUser(username, password, email) {
     try {
       const hashedPassword = await hashPassword(password);
+      const userId = uuidv4();
       const userData = {
+        userId,
         username,
         password: hashedPassword,
         email,
@@ -27,7 +30,10 @@ export function userService() {
     }
   }
 
-  return { getRegisteredUser: registerUser };
+  return {
+    registerNewUser,
+    userDao,
+  };
 }
 
 export async function hashPassword(password) {

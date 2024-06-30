@@ -29,34 +29,34 @@ export class UserDao {
   }
 
   async createUser(userData) {
-    try {
-      const users = (await this.readUsersFromFile()) || {};
-      const { username } = userData;
-      const isExists = this.isUserExists(users, username);
+    const users = (await this.readUsersFromFile()) || {};
+    const { userId, username } = userData;
+    const isExists = this.isUserExists(users, username);
 
-      if (isExists) {
-        throw new Error('User already exists');
-      }
-
-      const newUserId = uuid();
-      users[newUserId] = { ...userData };
-
-      await fs.writeFile(this.#filePath, JSON.stringify(users));
-      return true;
-    } catch (error) {
-      console.log(error);
-      return false;
+    if (isExists) {
+      throw new Error('User already exists');
     }
+
+    users[userId] = { ...userData };
+
+    await fs.writeFile(this.#filePath, JSON.stringify(users));
+
+    return true;
   }
 
-  async getUser(username) {
+  async getUserByUsername(username) {
     const users = await this.readUsersFromFile();
-    for (const key in users) {
-      if (users[key].username === username) {
-        return users[key];
-      }
-    }
-    return null;
+    const isExists = Object.values(users).find(
+      (user) => user.username === username
+    );
+
+    return isExists ?? null;
+  }
+
+  async getUserById(userId) {
+    const users = await this.readUsersFromFile();
+
+    return users[userId];
   }
 
   async deleteUser(userId) {
@@ -84,6 +84,7 @@ export class UserDao {
       if (this.isUserExists(users, userId)) {
         users[userId] = { ...users[userId], ...updateData };
         this.saveUsersToFile(users);
+
         return true;
       } else {
         throw new Error(`User with ${userId} not found`);

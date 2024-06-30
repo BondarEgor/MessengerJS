@@ -3,4 +3,5 @@ export const SERVICES = {
   users: 'userService',
   userDao: 'UserDao',
   authorization: 'authService',
+  sessions: 'sessionService',
 };

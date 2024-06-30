@@ -3,24 +3,17 @@ import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 
 export function authService() {
-  const userDao = diContainer.resolve(SERVICES.userDao);
+  const userService = diContainer.resolve(SERVICES.users);
+  const userDao = userService.userDao;
 
   async function authorizeUser(username, userPassword) {
-    try {
-      const { password } = await userDao.getUser(username);
-      const isPassEqual = await bcrypt.compare(userPassword, password);
+    const { password } = await userDao.getUserByUsername(username);
+    const isPassEqual = await bcrypt.compare(userPassword, password);
 
-      if (isPassEqual) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      throw new Error(e);
-    }
+    return isPassEqual;
   }
 
   return {
-    isAuthenticated: authorizeUser,
+    authorizeUser,
   };
 }

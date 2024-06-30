@@ -45,9 +45,12 @@ import { diContainer } from '../di/di.mjs';
  *         description: Внутренняя ошибка сервера
  */
 
-export function registrationController(req, res) {
+export function createRegistrationController(app) {
   const userService = diContainer.resolve(SERVICES.users);
-  const { username, password, email } = req.params;
-  const isSuccess = userService.getRegisteredUser(username, password, email);
-  res.json(isSuccess);
+  app.post('/api/v1/registration', (req, res) => {
+    const { username, password, email } = req.body;
+    const isSuccess = userService.registerNewUser(username, password, email);
+
+    res.json(isSuccess);
+  });
 }

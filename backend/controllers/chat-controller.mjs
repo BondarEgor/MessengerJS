@@ -32,9 +32,12 @@ import { SERVICES } from '../di/api.mjs';
  *                     description: Текст сообщения
  */
 
-export function chatController(req, res) {
-  const messageService = diContainer.resolve(SERVICES.messages);
-  const { chatId } = req.params;
-  const messages = messageService.getMessages(chatId);
-  res.json(messages);
+export function createChatController(app) {
+  const chatService = diContainer.resolve(SERVICES.messages);
+  app.get('/api/v1/messages/:chatId', (req, res) => {
+    const { chatId } = req.body;
+    const messages = chatService.getMessages(chatId);
+
+    res.json(messages);
+  });
 }

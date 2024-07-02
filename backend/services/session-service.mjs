@@ -1,44 +1,43 @@
-import bcrypt from 'bcrypt';
-import fs from 'fs/promises';
-import path from 'path';
-import PATHS from '../constants.js';
-import { fileURLToPath } from 'url';
+import { SERVICES } from '../di/api.mjs';
+import { diContainer } from '../di/di.mjs';
+import { hashPassword } from './registration-service.mjs';
 
 export function sessionService() {
-  const _filename = fileURLToPath(import.meta.url);
-  const _dirname = path.dirname(_filename);
-  const filePath = path.join(_dirname, '../data', PATHS.sessions);
+  const sessionDao = diContainer.resolve(SERVICES.sessionsDao);
+  const userService = diContainer.resolve(SERVICES.users);
+  const authService = diContainer.resolve(SERVICES.authorization);
 
   async function generateSessionInfo(username, password) {
+    const isAuthSuccess = await authService.authorizeUser(username, password);
+
+    if (!isAuthSuccess) {
+      throw new Error('Authorization error');
+    }
+
+    const hashedPassword = await hashPassword(password);
     const currentDate = new Date().getTime();
-    const salt = await bcrypt.genSalt(10);
-    const sessionId = await bcrypt.hash(
-      `${username}${password}${currentDate}`,
-      salt
-    );
+    const expireDate = calculateExpireDate(currentDate);
+    const { userId } = await userService.getUserByName(username);
 
-    const authToken =
-      'Bearer ' + (await bcrypt.hash(`${currentDate}${sessionId}`, salt));
-
-    return {
-      sessionId,
-      authToken,
+    const sessionInfo = {
+      username,
+      password: hashedPassword,
+      currentDate,
+      userId,
+      expireDate,
     };
+
+    const newSession = await sessionDao.createSession(sessionInfo);
+
+    return newSession ? sessionInfo : null;
+  }
+
+  function calculateExpireDate(currentDate) {
+    const expireDate = currentDate + 1000 * 60 * 60 * 24;
+    return expireDate;
   }
 
   return {
     generateSessionInfo,
   };
-
-  async function readSessionsFromFile() {
-    try {
-      const data = await fs.readFile(filePath, 'utf-8');
-      return JSON.parse(data);
-    } catch (error) {
-      if (error === 'ENOENT') await fs.writeFile(filePath, JSON.stringify([]));
-    }
-  }
-  async function saveSessionsToFile(sessions) {
-    await fs.writeFile(filePath, JSON.stringify(sessions, null, 2));
-  }
 }

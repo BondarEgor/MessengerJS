@@ -6,6 +6,10 @@ import { v4 as uuidv4 } from 'uuid';
 export function userService() {
   const userDao = diContainer.resolve(SERVICES.userDao);
 
+  async function getUserByName(username) {
+    return await userDao.getUserByName(username);
+  }
+
   async function registerNewUser(username, password, email) {
     try {
       const hashedPassword = await hashPassword(password);
@@ -32,7 +36,7 @@ export function userService() {
 
   return {
     registerNewUser,
-    userDao,
+    getUserByName,
   };
 }
 

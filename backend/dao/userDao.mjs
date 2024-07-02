@@ -29,6 +29,7 @@ export class UserDao {
 
   async createUser(userData) {
     const users = (await this.readUsersFromFile()) || {};
+
     const { userId, username } = userData;
     const isExists = this.isUserExists(users, username);
 
@@ -43,13 +44,13 @@ export class UserDao {
     return true;
   }
 
-  async getUserByUsername(username) {
+  async getUserByName(username) {
     const users = await this.readUsersFromFile();
-    const isExists = Object.values(users).find(
+    const isUserExists = Object.values(users).find(
       (user) => user.username === username
     );
 
-    return isExists ?? null;
+    return isUserExists ?? null;
   }
 
   async getUserById(userId) {

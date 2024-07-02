@@ -1,7 +1,8 @@
 export const SERVICES = {
   messages: 'messageService',
+  authorization: 'authService',
   users: 'userService',
   userDao: 'UserDao',
-  authorization: 'authService',
   sessions: 'sessionService',
+  sessionsDao: 'SessionDao',
 };

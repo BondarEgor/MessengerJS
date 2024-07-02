@@ -13,6 +13,7 @@ import { authService } from './services/auth-service.mjs';
 import { createAuthController } from './controllers/auth-controller.mjs';
 import bodyParser from 'body-parser';
 import { sessionService } from './services/session-service.mjs';
+import { SessionDao } from './dao/sessionDao.mjs';
 const app = express();
 
 // Использование CORS middleware для разрешения кросс-доменных запросов
@@ -41,6 +42,7 @@ diContainer.register(SERVICES.userDao, new UserDao());
 diContainer.register(SERVICES.messages, messageService);
 diContainer.register(SERVICES.users, userService);
 diContainer.register(SERVICES.authorization, authService);
+diContainer.register(SERVICES.sessionsDao, new SessionDao());
 diContainer.register(SERVICES.sessions, sessionService);
 
 // Метод GET возвращает массив случайных сообщений для chatId

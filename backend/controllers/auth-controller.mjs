@@ -42,17 +42,12 @@ export function createAuthController(app) {
 
   app.post('/api/v1/login', async (req, res) => {
     const { username, password } = req.body;
-    const isSuccess = await authService.authorizeUser(username, password);
 
-    if (isSuccess) {
-      const sessionId = await sessionService.generateSessionInfo(
-        username,
-        password
-      );
+    const sessionInfo = await sessionService.generateSessionInfo(
+      username,
+      password
+    );
 
-      res.json(sessionId);
-    } else {
-      res.status(401).json('Unauthorized');
-    }
+    res.status(201).json(sessionInfo);
   });
 }

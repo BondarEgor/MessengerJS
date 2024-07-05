@@ -1,40 +1,39 @@
+import { ONE_DAY } from '../constants.js';
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
-import { hashPassword } from './registration-service.mjs';
+import bcrypt from 'bcrypt';
 
 export function sessionService() {
   const sessionDao = diContainer.resolve(SERVICES.sessionsDao);
-  const userService = diContainer.resolve(SERVICES.users);
-  const authService = diContainer.resolve(SERVICES.authorization);
 
-  async function generateSessionInfo(username, password) {
-    const isAuthSuccess = await authService.authorizeUser(username, password);
-
-    if (!isAuthSuccess) {
-      throw new Error('Authorization error');
-    }
-
-    const hashedPassword = await hashPassword(password);
+  async function generateSessionInfo(user) {
     const currentDate = new Date().getTime();
-    const expireDate = calculateExpireDate(currentDate);
-    const { userId } = await userService.getUserByName(username);
+    const authToken = await generateToken(user);
+    const expireDate = currentDate + ONE_DAY;
+    const refreshToken = await generateRefreshToken(authToken);
 
-    const sessionInfo = {
-      username,
-      password: hashedPassword,
-      currentDate,
-      userId,
+    const sessionData = {
+      authToken,
       expireDate,
+      refreshToken,
     };
 
-    const newSession = await sessionDao.createSession(sessionInfo);
-
-    return newSession ? sessionInfo : null;
+    return (await sessionDao.createSession(sessionData)) ? sessionData : null;
   }
 
-  function calculateExpireDate(currentDate) {
-    const expireDate = currentDate + 1000 * 60 * 60 * 24;
-    return expireDate;
+  async function generateToken(data) {
+    const combinedValues = Object.values(data).join('-');
+    const saltRounds = 10;
+    const token = await bcrypt.hash(combinedValues, saltRounds);
+
+    return token;
+  }
+
+  async function generateRefreshToken(tokenToRefresh) {
+    const saltRounds = 10;
+    const refreshToken = await bcrypt.hash(tokenToRefresh, saltRounds);
+
+    return refreshToken;
   }
 
   return {

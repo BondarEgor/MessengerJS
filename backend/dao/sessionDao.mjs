@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
-import PATHS from '../constants.js';
 import { fileURLToPath } from 'url';
+import { PATHS } from '../constants.js';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
@@ -9,7 +9,7 @@ const _dirname = path.dirname(_filename);
 export class SessionDao {
   #filePath = path.join(_dirname, '../data', PATHS.sessions);
 
-  async readSessionsFromFile() {
+  async #readSessions() {
     try {
       const data = await fs.readFile(this.#filePath, 'utf-8');
       return JSON.parse(data);
@@ -19,42 +19,23 @@ export class SessionDao {
     }
   }
 
-  async createSession(sessionInfo) {
-    const sessions = (await this.readSessionsFromFile()) || {};
-    const { userId } = sessionInfo;
+  async createSession(sessionData) {
+    const sessions = this.#readSessions();
+    const { authToken } = sessionData;
+    sessions[authToken] = sessionData;
 
-    const isSessionExists = this.isSessionExists(sessions, userId);
-
-    if (isSessionExists) {
-      return await this.updateSession(userId);
-    } else {
-      sessions[userId] = sessionInfo;
-      await this.saveSessionsToFile(sessions);
-    }
+    return await this.#writeSessions(sessions);
   }
 
-  async saveSessionsToFile(sessions) {
+  async #writeSessions(sessions) {
     await fs.writeFile(this.#filePath, JSON.stringify(sessions, null, 2));
 
     return true;
   }
 
-  isSessionExists(sessions, userId) {
-    return !!sessions[userId];
+  async updateSession(token) {
+    //Здесь нужно будет добавить логику по обновлению токена, имея рефреш токен в следующих задачах
   }
-
-  async getSessionById(userId) {}
-
-  async updateSession(sessionId) {
-    const sessions = await this.readSessionsFromFile();
-    const newExpireTime = new Date().getTime();
-    sessions[sessionId].expireTime = newExpireTime;
-    const saveNewSession = await this.saveSessionsToFile(sessions);
-
-    return !!saveNewSession;
-  }
-
-  async deleteSession() {}
 
   generateSession() {}
 }

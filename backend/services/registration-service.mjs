@@ -11,26 +11,25 @@ export function userService() {
   }
 
   async function registerNewUser(username, password, email) {
-    try {
-      const hashedPassword = await hashPassword(password);
-      const userId = uuidv4();
-      const userData = {
-        userId,
-        username,
-        password: hashedPassword,
-        email,
-      };
+    if (!username || !password || !email) {
+      throw new Error('Provide all the fields');
+    }
 
-      const newUser = await userDao.createUser(userData);
+    const hashedPassword = await hashPassword(password);
+    
+    const userData = {
+      username,
+      password: hashedPassword,
+      email,
+    };
 
-      if (newUser) {
-        return true;
-      } else {
-        throw new Error(error);
-      }
-    } catch (error) {
-      console.error(error);
-      return false;
+    const newUser = await userDao.createUser(userData);
+
+
+    if (newUser) {
+      return true;
+    } else {
+      throw new Error(error);
     }
   }
 

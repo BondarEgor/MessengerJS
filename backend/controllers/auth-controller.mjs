@@ -38,16 +38,19 @@ import { diContainer } from '../di/di.mjs';
 
 export function createAuthController(app) {
   const authService = diContainer.resolve(SERVICES.authorization);
-  const sessionService = diContainer.resolve(SERVICES.sessions);
 
   app.post('/api/v1/login', async (req, res) => {
     const { username, password } = req.body;
 
-    const sessionInfo = await sessionService.generateSessionInfo(
-      username,
-      password
-    );
+    try {
+      const authorizationResult = await authService.isUserAllowed(
+        username,
+        password
+      );
 
-    res.status(201).json(sessionInfo);
+      res.status(201).json(authorizationResult);
+    } catch (e) {
+      res.status(401).json(`Unauthorized ${e}`);
+    }
   });
 }

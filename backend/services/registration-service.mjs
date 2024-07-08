@@ -5,32 +5,39 @@ import { diContainer } from '../di/di.mjs';
 export function userService() {
   const userDao = diContainer.resolve(SERVICES.userDao);
 
-  async function registerUser(username, password, email) {
-    try {
-      const hashedPassword = await hashPassword(password);
-      const userData = {
-        username,
-        password: hashedPassword,
-        email,
-      };
+  async function getUserByName(username) {
+    return await userDao.getUserByName(username);
+  }
 
-      const newUser = await userDao.createUser(userData);
+  async function registerNewUser(username, password, email) {
+    if (!username || !password || !email) {
+      throw new Error('Provide all the fields');
+    }
 
-      if (newUser) {
-        return true;
-      } else {
-        throw new Error(error);
-      }
-    } catch (error) {
-      console.error(error);
-      return false;
+    const hashedPassword = await hashPassword(password);
+
+    const userData = {
+      username,
+      password: hashedPassword,
+      email,
+    };
+
+    const newUser = await userDao.createUser(userData);
+
+    if (newUser) {
+      return true;
+    } else {
+      throw new Error(error);
     }
   }
 
-  return { getRegisteredUser: registerUser };
+  return {
+    registerNewUser,
+    getUserByName,
+  };
 }
 
-async function hashPassword(password) {
+export async function hashPassword(password) {
   const saltRounds = 10;
   const salt = await bcrypt.genSaltSync(saltRounds);
   const hash = await bcrypt.hash(password, salt);

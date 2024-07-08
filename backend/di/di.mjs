@@ -7,7 +7,7 @@ export const diContainer = (() => {
 
   const resolve = (name) => {
     if (dependencies[name] === undefined) {
-      throw new Error(`Dependency "${name}" not found`);
+      throw new Error(`Dependency ${name} not found`);
     }
     if (typeof dependencies[name] === 'function') {
       return dependencies[name]();

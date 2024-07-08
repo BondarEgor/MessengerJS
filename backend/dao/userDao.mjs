@@ -1,8 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
-import PATHS from '../constants.js';
 import { fileURLToPath } from 'url';
-import { v4 as uuid } from 'uuid';
+import { PATHS } from '../constants.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
@@ -10,7 +10,7 @@ const _dirname = path.dirname(_filename);
 export class UserDao {
   #filePath = path.join(_dirname, '../data', PATHS.users);
 
-  async readUsersFromFile() {
+  async #readUsers() {
     try {
       const data = await fs.readFile(this.#filePath, 'utf-8');
       return JSON.parse(data);
@@ -20,48 +20,53 @@ export class UserDao {
     }
   }
 
-  async saveUsersToFile(users) {
+  async #writeUsers(users) {
     await fs.writeFile(this.#filePath, JSON.stringify(users, null, 2));
   }
 
-  isUserExists(users, userId) {
-    return !!users[userId];
+  #isUserExists(users, username) {
+    return Object.values(users).find((user) => user.username === username);
   }
 
   async createUser(userData) {
-    try {
-      const users = (await this.readUsersFromFile()) || {};
-      const { username } = userData;
-      const isExists = this.isUserExists(users, username);
+    const users = (await this.#readUsers()) || {};
 
-      if (isExists) {
-        throw new Error('User already exists');
-      }
+    const { username } = userData;
+    const isExists = this.#isUserExists(users, username);
 
-      const newUserId = uuid();
-      users[newUserId] = { ...userData };
-
-      await fs.writeFile(this.#filePath, JSON.stringify(users));
-      return true;
-    } catch (error) {
-      console.log(error);
-      return false;
+    if (isExists) {
+      throw new Error('User already exists');
     }
+    const userId = uuidv4();
+    users[userId] = { ...userData, userId };
+
+    await fs.writeFile(this.#filePath, JSON.stringify(users));
+
+    return true;
   }
 
-  async getUser(userId) {
-    const users = await this.readUsersFromFile();
+  async getUserByName(username) {
+    const users = await this.#readUsers();
+    const isUserExists = Object.values(users).find(
+      (user) => user.username === username
+    );
+
+    return isUserExists ?? null;
+  }
+
+  async getUserById(userId) {
+    const users = await this.#readUsers();
 
     return users[userId];
   }
 
   async deleteUser(userId) {
     try {
-      const users = await this.readUsersFromFile();
+      const users = await this.#readUsers();
 
-      if (this.isUserExists(users, userId)) {
+      if (this.#isUserExists(users, userId)) {
         delete users[userId];
-        await this.saveUsersToFile(users);
+        await this.#writeUsers(users);
         return true;
       } else {
         throw new Error(`User with id ${userId} not found`);
@@ -74,20 +79,15 @@ export class UserDao {
   }
 
   async updateUser(userId, updateData) {
-    try {
-      const users = await this.readUsersFromFile();
+    const users = await this.#readUsers();
 
-      if (this.isUserExists(users, userId)) {
-        users[userId] = { ...users[userId], ...updateData };
-        this.saveUsersToFile(users);
-        return true;
-      } else {
-        throw new Error(`User with ${userId} not found`);
-      }
-    } catch (error) {
-      console.error(error);
+    if (this.#isUserExists(users, userId)) {
+      users[userId] = { ...users[userId], ...updateData };
+      this.#writeUsers(users);
 
-      return false;
+      return true;
+    } else {
+      throw new Error(`User with ${userId} not found`);
     }
   }
 }

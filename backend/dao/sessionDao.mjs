@@ -20,9 +20,9 @@ export class SessionDao {
   }
 
   async createSession(sessionData) {
-    const sessions = this.#readSessions();
-    const { authToken } = sessionData;
-    sessions[authToken] = sessionData;
+    const sessions = await this.#readSessions();
+    const { userId } = sessionData;
+    sessions[userId] = sessionData;
 
     return await this.#writeSessions(sessions);
   }
@@ -33,9 +33,25 @@ export class SessionDao {
     return true;
   }
 
-  async updateSession(token) {
-    //Здесь нужно будет добавить логику по обновлению токена, имея рефреш токен в следующих задачах
+  async updateSession(userId, updatedSessionInfo) {
+    const sessions = await this.#readSessions();
+
+    sessions[userId] = updatedSessionInfo;
+
+    await this.#writeSessions(sessions);
   }
 
-  generateSession() {}
+  async getSessionByUserId(userId) {
+    const sessions = await this.#readSessions();
+
+    return sessions[userId];
+  }
+
+  async deleteSessionById(userId) {
+    const sessions = await this.#readSessions();
+    const deletedSession = delete sessions[userId];
+    await this.#writeSessions(sessions);
+
+    return deletedSession;
+  }
 }

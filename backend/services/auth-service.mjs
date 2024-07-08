@@ -1,4 +1,4 @@
-import bcrypt, { hash } from 'bcrypt';
+import bcrypt from 'bcrypt';
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 
@@ -6,7 +6,7 @@ export function authService() {
   const userService = diContainer.resolve(SERVICES.users);
   const sessionService = diContainer.resolve(SERVICES.sessions);
 
-  async function isUserAllowed(username, userPassword) {
+  async function authorizeUser(username, userPassword) {
     try {
       const user = await userService.getUserByName(username);
 
@@ -19,7 +19,7 @@ export function authService() {
       if (isPassEqual) {
         const sessionInfo = await sessionService.generateSessionInfo(user);
 
-        return sessionInfo
+        return sessionInfo;
       } else {
         throw new Error('Password not valid');
       }
@@ -32,6 +32,6 @@ export function authService() {
     return await bcrypt.compare(userPassword, hashedPassword);
   }
   return {
-    isUserAllowed,
+    authorizeUser,
   };
 }

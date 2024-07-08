@@ -7,18 +7,54 @@ export function sessionService() {
   const sessionDao = diContainer.resolve(SERVICES.sessionsDao);
 
   async function generateSessionInfo(user) {
-    const currentDate = new Date().getTime();
+    const { userId } = user;
+
+    const existingSession = await sessionDao.getSessionByUserId(userId);
+    const currentTime = new Date().getTime();
+    if (existingSession) {
+      if (existingSession.expireDate > currentTime) {
+        return existingSession;
+      }
+
+      if (existingSession.refreshToken) {
+        return await updateSessionInfo(user);
+      } else {
+        throw new Error('No refresh Token');
+      }
+    }
+
     const authToken = await generateToken(user);
-    const expireDate = currentDate + ONE_DAY;
+    const expireDate = generateExpireDate();
     const refreshToken = await generateRefreshToken(authToken);
 
     const sessionData = {
+      userId,
       authToken,
       expireDate,
       refreshToken,
     };
 
     return (await sessionDao.createSession(sessionData)) ? sessionData : null;
+  }
+
+  function generateExpireDate() {
+    const currentDate = new Date().getTime();
+    return currentDate + ONE_DAY;
+  }
+
+  async function updateSessionInfo(user) {
+    const { userId } = user;
+    const newAuthToken = await generateToken(user);
+    const newRefreshToken = await generateRefreshToken(newAuthToken);
+    const newExpireDate = generateExpireDate();
+
+    const updatedSessionInfo = {
+      authToken: newAuthToken,
+      refreshToken: newRefreshToken,
+      expireDate: newExpireDate,
+    };
+
+    return sessionDao.updateSession(userId, updateSessionInfo);
   }
 
   async function generateToken(data) {

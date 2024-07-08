@@ -38,7 +38,7 @@ export class UserDao {
       throw new Error('User already exists');
     }
     const userId = uuidv4();
-    users[userId] = { ...userData };
+    users[userId] = { ...userData, userId };
 
     await fs.writeFile(this.#filePath, JSON.stringify(users));
 

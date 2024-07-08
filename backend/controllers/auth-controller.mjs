@@ -43,12 +43,12 @@ export function createAuthController(app) {
     const { username, password } = req.body;
 
     try {
-      const authorizationResult = await authService.isUserAllowed(
+      const userSessionInfo = await authService.authorizeUser(
         username,
         password
       );
 
-      res.status(201).json(authorizationResult);
+      res.status(201).json(userSessionInfo);
     } catch (e) {
       res.status(401).json(`Unauthorized ${e}`);
     }

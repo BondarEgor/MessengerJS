@@ -1,7 +1,6 @@
 import bcrypt from 'bcrypt';
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
-import { v4 as uuidv4 } from 'uuid';
 
 export function userService() {
   const userDao = diContainer.resolve(SERVICES.userDao);
@@ -16,7 +15,7 @@ export function userService() {
     }
 
     const hashedPassword = await hashPassword(password);
-    
+
     const userData = {
       username,
       password: hashedPassword,
@@ -24,7 +23,6 @@ export function userService() {
     };
 
     const newUser = await userDao.createUser(userData);
-
 
     if (newUser) {
       return true;

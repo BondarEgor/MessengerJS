@@ -1,25 +1,25 @@
+import bodyParser from 'body-parser';
 import cors from 'cors';
 import express from 'express';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
+import { createAuthController } from './controllers/auth-controller.mjs';
 import { createChatController } from './controllers/chat-controller.mjs';
 import { createRegistrationController } from './controllers/registration-controller.mjs';
+import { createUsersController } from './controllers/users-controller.mjs';
+import { SessionDao } from './dao/sessionDao.mjs';
 import { UserDao } from './dao/userDao.mjs';
 import { SERVICES } from './di/api.mjs';
 import { diContainer } from './di/di.mjs';
-import { messageService } from './services/message-service.mjs';
-import { userService } from './services/registration-service.mjs';
 import { authService } from './services/auth-service.mjs';
-import { createAuthController } from './controllers/auth-controller.mjs';
-import bodyParser from 'body-parser';
+import { messageService } from './services/message-service.mjs';
+import { registrationService } from './services/registration-service.mjs';
 import { sessionService } from './services/session-service.mjs';
-import { SessionDao } from './dao/sessionDao.mjs';
+import { usersService } from './services/users-service.mjs';
 const app = express();
 
 // Использование CORS middleware для разрешения кросс-доменных запросов
 app.use(cors());
-
-//Добавил парсер json
 app.use(bodyParser.json());
 
 // Загрузка документации Swagger
@@ -40,15 +40,16 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 diContainer.register(SERVICES.userDao, new UserDao());
 diContainer.register(SERVICES.messages, messageService);
-diContainer.register(SERVICES.users, userService);
+diContainer.register(SERVICES.registration, registrationService);
 diContainer.register(SERVICES.authorization, authService);
 diContainer.register(SERVICES.sessionsDao, new SessionDao());
 diContainer.register(SERVICES.sessions, sessionService);
+diContainer.register(SERVICES.users, usersService);
 
-// Метод GET возвращает массив случайных сообщений для chatId
 createRegistrationController(app);
 createChatController(app);
 createAuthController(app);
+createUsersController(app);
 
 const PORT = 3000;
 app.listen(PORT, () => {

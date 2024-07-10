@@ -2,15 +2,17 @@ import bcrypt from 'bcrypt';
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 
-export function userService() {
+export function registrationService() {
   const userDao = diContainer.resolve(SERVICES.userDao);
 
   async function getUserByName(username) {
     return await userDao.getUserByName(username);
   }
 
-  async function registerNewUser(username, password, email) {
-    if (!username || !password || !email) {
+  async function registerNewUser(userInfo) {
+    const { username, password, email, avatar } = userInfo;
+
+    if (!username || !password || !email || !avatar) {
       throw new Error('Provide all the fields');
     }
 
@@ -20,6 +22,9 @@ export function userService() {
       username,
       password: hashedPassword,
       email,
+      avatar,
+      status: 'client',
+      role: 'user',
     };
 
     const newUser = await userDao.createUser(userData);

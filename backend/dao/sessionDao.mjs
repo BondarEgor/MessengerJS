@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { PATHS } from '../constants.js';
+import bcrypt from 'bcrypt'
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
@@ -13,10 +14,20 @@ export class SessionDao {
     try {
       const data = await fs.readFile(this.#filePath, 'utf-8');
       return JSON.parse(data);
-    } catch (error) {
-      if (error === 'ENOENT')
-        await fs.writeFile(this.#filePath, JSON.stringify([]));
+    } catch (_) {
+      await fs.writeFile(this.#filePath, JSON.stringify({}));
     }
+  }
+
+  async isTokenValid(token) {
+    const sessions = await this.#readSessions()
+    const currentSession = Object.values(sessions).find(session => bcrypt.compare (session.authToken, token))
+    
+    if(!currentSession){
+      throw new Error('Session not found')
+    }
+
+    return currentSession
   }
 
   async createSession(sessionData) {

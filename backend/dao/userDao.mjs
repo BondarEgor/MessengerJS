@@ -1,8 +1,9 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { PATHS } from '../constants.js';
 import { v4 as uuidv4 } from 'uuid';
+import { PATHS } from '../constants.js';
+import { DataTransferObject } from '../dto/dto.mjs';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
@@ -14,29 +15,29 @@ export class UserDao {
     try {
       const data = await fs.readFile(this.#filePath, 'utf-8');
       return JSON.parse(data);
-    } catch (error) {
-      if (error === 'ENOENT')
-        await fs.writeFile(this.#filePath, JSON.stringify([]));
+    } catch (_) {
+      await fs.writeFile(this.#filePath, JSON.stringify([]));
     }
   }
-
   async #writeUsers(users) {
     await fs.writeFile(this.#filePath, JSON.stringify(users, null, 2));
   }
 
-  #isUserExists(users, username) {
+  async #isUserExists(username) {
+    const users = await this.#readUsers();
+
     return Object.values(users).find((user) => user.username === username);
   }
 
   async createUser(userData) {
     const users = (await this.#readUsers()) || {};
-
     const { username } = userData;
-    const isExists = this.#isUserExists(users, username);
+    const isExists = await this.#isUserExists(username);
 
     if (isExists) {
       throw new Error('User already exists');
     }
+
     const userId = uuidv4();
     users[userId] = { ...userData, userId };
 
@@ -57,37 +58,51 @@ export class UserDao {
   async getUserById(userId) {
     const users = await this.#readUsers();
 
-    return users[userId];
+    return users[userId] ? { ...users[userId], password: null } : {};
   }
 
-  async deleteUser(userId) {
-    try {
-      const users = await this.#readUsers();
+  async getAllUsers() {
+    const data = await this.#readUsers();
+    const users = Object.values(data);
 
-      if (this.#isUserExists(users, userId)) {
-        delete users[userId];
-        await this.#writeUsers(users);
-        return true;
-      } else {
+    if (users.length === 0) {
+      throw new Error('No users found');
+    }
+
+    const dtoUsers = users.map((user) => new DataTransferObject(user));
+
+    return dtoUsers;
+  }
+
+  async deleteUserById(userId) {
+    const users = await this.#readUsers();
+    try {
+      const { username } = users[userId];
+
+      if (!this.#isUserExists(username)) {
         throw new Error(`User with id ${userId} not found`);
       }
-    } catch (error) {
-      console.error(error);
 
-      return false;
+      delete users[userId];
+      await this.#writeUsers(users);
+
+      return userId;
+    } catch (e) {
+      throw new Error('');
     }
   }
 
-  async updateUser(userId, updateData) {
+  async updateUser(updateData, token) {
     const users = await this.#readUsers();
+    const { userName } = updateData;
 
-    if (this.#isUserExists(users, userId)) {
-      users[userId] = { ...users[userId], ...updateData };
-      this.#writeUsers(users);
-
-      return true;
-    } else {
+    if (!this.#isUserExists(userName)) {
       throw new Error(`User with ${userId} not found`);
     }
+
+    users[userId] = { ...users[userId], ...updateData };
+    await this.#writeUsers(users);
+
+    return users[userId];
   }
 }

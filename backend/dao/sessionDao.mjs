@@ -18,14 +18,16 @@ export class SessionDao {
     }
   }
 
-  async isTokenValid(userId, token) {
+  async isUserIdValid(userId) {
     const sessions = await this.#readSessions();
-    const isSessionValid = Object.values(sessions).some(session => {
-      return (
-        session.userId === userId &&
-        session.authToken === token &&
-        session.expireDate > Date.now()
-      );
+
+    return Object.values(sessions).some((session) => session.userId === userId);
+  }
+
+  async isTokenValid(token) {
+    const sessions = await this.#readSessions();
+    const isSessionValid = Object.values(sessions).some((session) => {
+      return session.authToken === token && session.expireDate > Date.now();
     });
 
     if (!isSessionValid) {

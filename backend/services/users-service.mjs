@@ -16,14 +16,14 @@ export function usersService() {
     return await userDao.deleteUserById(userId);
   }
 
-	async function getAllUsers() {
-		return await userDao.getAllUsers()
-	}
+  async function getAllUsers() {
+    return await userDao.getAllUsers();
+  }
 
   return {
     getUserById,
     updateUser,
     deleteUserById,
-		getAllUsers
+    getAllUsers,
   };
 }

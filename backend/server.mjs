@@ -16,6 +16,8 @@ import { messageService } from './services/message-service.mjs';
 import { registrationService } from './services/registration-service.mjs';
 import { sessionService } from './services/session-service.mjs';
 import { usersService } from './services/users-service.mjs';
+import { authMiddleware } from './middlewares/authMiddleware.js';
+
 const app = express();
 
 // Использование CORS middleware для разрешения кросс-доменных запросов
@@ -47,8 +49,10 @@ diContainer.register(SERVICES.sessions, sessionService);
 diContainer.register(SERVICES.users, usersService);
 
 createRegistrationController(app);
-createChatController(app);
 createAuthController(app);
+app.use(authMiddleware);
+
+createChatController(app);
 createUsersController(app);
 
 const PORT = 3000;

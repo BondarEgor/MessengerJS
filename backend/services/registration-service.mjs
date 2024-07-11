@@ -23,8 +23,8 @@ export function registrationService() {
       password: hashedPassword,
       email,
       avatar,
-      status: 'client',
-      role: 'user',
+      statusId: 'client',
+      roleId: 'user',
     };
 
     const newUser = await userDao.createUser(userData);

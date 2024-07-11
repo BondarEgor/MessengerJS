@@ -1,5 +1,6 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
+import { usersService } from '../services/users-service.mjs';
 
 /**
  * openapi: 3.0.0
@@ -130,7 +131,7 @@ paths:
 
 export function createUsersController(app) {
   const userService = diContainer.resolve(SERVICES.users);
-	const sessionService = diContainer.resolve(SERVICES.sessions)
+  const sessionService = diContainer.resolve(SERVICES.sessions);
 
   app.get('/api/v1/users', async (_, res) => {
     try {
@@ -142,21 +143,46 @@ export function createUsersController(app) {
   });
 
   app.put('/api/v1/users/:userId', async (req, res) => {
-		const token = req.headers['authorization']
-		await sessionService.isTokenValid(token)
-		const { userId } = req.params
-    const userData = req.body;
+    const token = req.headers['authorization'];
+    const { userId } = req.params;
 
-    const updatedUserInfo = await userService.updateUser(userData,token);
-
-    res.status(200).json(updatedUserInfo);
-  });
-
-  app.delete('/api/v1/users', async (req, res) => {
-    const { userId } = req.body;
+    if (!token || !userId) {
+      res.status(401).json({ message: 'Token or userId not provided' });
+    }
 
     try {
+      const userData = req.body;
+      const isUserValid = await sessionService.isTokenValid(userId, token);
+
+      if (!isUserValid) {
+        res.status(401).json({ message: 'Token is not valid' });
+      }
+
+      const updatedUserInfo = await userService.updateUser(userData, userId);
+
+      res.status(200).json(updatedUserInfo);
+    } catch (e) {
+      console.error(`Faced error updating user: ${e}`);
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.delete('/api/v1/users/:userId', async (req, res) => {
+    const token = req.headers['authorization'];
+    const { userId } = req.params;
+    if (!token || !userId) {
+      res.status(401).json({ message: 'Token or id not provided' });
+    }
+
+    try {
+      const isUserValid = await sessionService.isTokenValid(userId, token);
+
+      if(!isUserValid){
+        res.status(400).json({message: 'Token not valid'})
+      }
+      
       const deleteUserId = await userService.deleteUserById(userId);
+
       res.json(deleteUserId);
     } catch (e) {
       res.status(404).json(`User can't be deleted`);

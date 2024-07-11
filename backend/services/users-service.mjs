@@ -8,8 +8,8 @@ export function usersService() {
     return await userDao.getUserById(userId);
   }
 
-  async function updateUser(userData, token) {
-    return await userDao.updateUser(userData, token);
+  async function updateUser(userData, userId) {
+    return await userDao.updateUser(userData, userId);
   }
 
   async function deleteUserById(userId) {

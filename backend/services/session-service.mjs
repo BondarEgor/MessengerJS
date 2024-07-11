@@ -6,14 +6,8 @@ import bcrypt from 'bcrypt';
 export function sessionService() {
   const sessionDao = diContainer.resolve(SERVICES.sessionsDao);
 
-  async function isTokenValid(token){
-    const { authToken, expireDate }= await sessionDao.isTokenValid(token)
-
-    if(!authToken || !expireDate > Date.now()){
-      throw new Error('Try to login')
-    }
-
-    return true
+  async function isTokenValid(userId, token) {
+    return await sessionDao.isTokenValid(userId, token);
   }
 
   async function generateSessionInfo(user) {
@@ -85,5 +79,6 @@ export function sessionService() {
 
   return {
     generateSessionInfo,
+    isTokenValid,
   };
 }

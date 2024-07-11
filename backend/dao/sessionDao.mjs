@@ -2,7 +2,6 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { PATHS } from '../constants.js';
-import bcrypt from 'bcrypt'
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
@@ -19,15 +18,21 @@ export class SessionDao {
     }
   }
 
-  async isTokenValid(token) {
-    const sessions = await this.#readSessions()
-    const currentSession = Object.values(sessions).find(session => bcrypt.compare (session.authToken, token))
-    
-    if(!currentSession){
-      throw new Error('Session not found')
+  async isTokenValid(userId, token) {
+    const sessions = await this.#readSessions();
+    const isSessionValid = Object.values(sessions).some(session => {
+      return (
+        session.userId === userId &&
+        session.authToken === token &&
+        session.expireDate > Date.now()
+      );
+    });
+
+    if (!isSessionValid) {
+      throw new Error('Session not valid');
     }
 
-    return currentSession
+    return isSessionValid;
   }
 
   async createSession(sessionData) {

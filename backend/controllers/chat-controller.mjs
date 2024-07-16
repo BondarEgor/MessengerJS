@@ -1,5 +1,6 @@
-import { diContainer } from '../di/di.mjs';
 import { SERVICES } from '../di/api.mjs';
+import { diContainer } from '../di/di.mjs';
+import { authMiddleware } from '../middlewares/authMiddleware.mjs';
 
 /**
  * @swagger
@@ -34,7 +35,7 @@ import { SERVICES } from '../di/api.mjs';
 
 export function createChatController(app) {
   const chatService = diContainer.resolve(SERVICES.messages);
-  app.get('/api/v1/messages/:chatId', (req, res) => {
+  app.get('/api/v1/messages/:chatId', authMiddleware, (req, res) => {
     const { chatId } = req.body;
     const messages = chatService.getMessages(chatId);
 

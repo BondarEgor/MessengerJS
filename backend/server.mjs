@@ -16,7 +16,6 @@ import { messageService } from './services/message-service.mjs';
 import { registrationService } from './services/registration-service.mjs';
 import { sessionService } from './services/session-service.mjs';
 import { usersService } from './services/users-service.mjs';
-import { authMiddleware } from './middlewares/authMiddleware.js';
 
 const app = express();
 
@@ -50,7 +49,6 @@ diContainer.register(SERVICES.users, usersService);
 
 createRegistrationController(app);
 createAuthController(app);
-app.use(authMiddleware);
 
 createChatController(app);
 createUsersController(app);

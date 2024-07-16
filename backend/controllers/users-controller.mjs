@@ -1,5 +1,6 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
+import { authMiddleware } from '../middlewares/authMiddleware.mjs';
 
 /**
  * openapi: 3.0.0
@@ -130,9 +131,8 @@ paths:
 
 export function createUsersController(app) {
   const userService = diContainer.resolve(SERVICES.users);
-  const sessionService = diContainer.resolve(SERVICES.sessions);
 
-  app.get('/api/v1/users', async (_, res) => {
+  app.get('/api/v1/users', authMiddleware, async (_, res) => {
     try {
       const users = await userService.getAllUsers();
       res.status(200).json(users);
@@ -141,7 +141,7 @@ export function createUsersController(app) {
     }
   });
 
-  app.put('/api/v1/users/:userId', async (req, res) => {
+  app.put('/api/v1/users/:userId', authMiddleware, async (req, res) => {
     const { userId } = req.params;
 
     if (!userId) {
@@ -159,7 +159,7 @@ export function createUsersController(app) {
     }
   });
 
-  app.delete('/api/v1/users/:userId', async (req, res) => {
+  app.delete('/api/v1/users/:userId', authMiddleware, async (req, res) => {
     const { userId } = req.params;
 
     if (!userId) {

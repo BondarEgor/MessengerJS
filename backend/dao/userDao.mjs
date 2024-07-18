@@ -70,9 +70,7 @@ export class UserDao {
       throw new Error('No users found');
     }
 
-    const dtoUsers = users.map(DataTransferObject);
-
-    return dtoUsers;
+    return users.map(DataTransferObject);
   }
 
   async deleteUserById(userId) {

@@ -87,7 +87,7 @@ export class UserDao {
 
       return userId;
     } catch (e) {
-      throw new Error('');
+      throw new Error(`Error deleting user: ${e.message}`);
     }
   }
 

@@ -13,10 +13,28 @@ export class SessionDao {
     try {
       const data = await fs.readFile(this.#filePath, 'utf-8');
       return JSON.parse(data);
-    } catch (error) {
-      if (error === 'ENOENT')
-        await fs.writeFile(this.#filePath, JSON.stringify([]));
+    } catch (_) {
+      await fs.writeFile(this.#filePath, JSON.stringify({}));
     }
+  }
+
+  async isUserIdValid(userId) {
+    const sessions = await this.#readSessions();
+
+    return Object.values(sessions).some((session) => session.userId === userId);
+  }
+
+  async isTokenValid(token) {
+    const sessions = await this.#readSessions();
+    const isSessionValid = Object.values(sessions).some((session) => {
+      return session.authToken === token && session.expireDate > Date.now();
+    });
+
+    if (!isSessionValid) {
+      throw new Error('Session not valid');
+    }
+
+    return isSessionValid;
   }
 
   async createSession(sessionData) {

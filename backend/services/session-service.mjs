@@ -6,11 +6,16 @@ import bcrypt from 'bcrypt';
 export function sessionService() {
   const sessionDao = diContainer.resolve(SERVICES.sessionsDao);
 
+  async function isTokenValid(userId, token) {
+    return await sessionDao.isTokenValid(userId, token);
+  }
+
   async function generateSessionInfo(user) {
     const { userId } = user;
 
     const existingSession = await sessionDao.getSessionByUserId(userId);
     const currentTime = new Date().getTime();
+
     if (existingSession) {
       if (existingSession.expireDate > currentTime) {
         return existingSession;
@@ -54,7 +59,7 @@ export function sessionService() {
       expireDate: newExpireDate,
     };
 
-    return sessionDao.updateSession(userId, updateSessionInfo);
+    return sessionDao.updateSession(userId, updatedSessionInfo);
   }
 
   async function generateToken(data) {
@@ -74,5 +79,6 @@ export function sessionService() {
 
   return {
     generateSessionInfo,
+    isTokenValid,
   };
 }

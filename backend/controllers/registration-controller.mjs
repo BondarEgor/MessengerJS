@@ -46,16 +46,11 @@ import { diContainer } from '../di/di.mjs';
  */
 
 export function createRegistrationController(app) {
-  const userService = diContainer.resolve(SERVICES.users);
+  const registrationService = diContainer.resolve(SERVICES.registration);
 
   app.post('/api/v1/registration', async (req, res) => {
-    const { username, password, email } = req.body;
     try {
-      const isSuccess = await userService.registerNewUser(
-        username,
-        password,
-        email
-      );
+      const isSuccess = await registrationService.registerNewUser(req.body);
 
       if (isSuccess) {
         res.status(200).json({ message: 'User registererd successfully' });

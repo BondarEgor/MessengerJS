@@ -2,84 +2,84 @@ import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 import { authMiddleware } from '../middlewares/authMiddleware.mjs';
 
-/**
- * @swagger
- * /chats:
- *   post:
- *     summary: Create a new chat
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 description: The name of the chat
- *                 example: "Project Discussion"
- *               description:
- *                 type: string
- *                 description: The description of the chat
- *                 example: "This chat is for discussing the current project."
- *               type:
- *                 type: string
- *                 enum: [private, group]
- *                 description: The type of chat
- *                 example: "group"
- *               members:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: List of user identifiers
- *                 example: ["user1", "user2", "user3"]
- *               creator:
- *                 type: string
- *                 description: Identifier of the chat creator
- *                 example: "user1"
- *     responses:
- *       '201':
- *         description: Chat successfully created
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   description: Identifier of the created chat
- *                   example: "chat1"
- *                 name:
- *                   type: string
- *                   description: The name of the chat
- *                   example: "Project Discussion"
- *                 description:
- *                   type: string
- *                   description: The description of the chat
- *                   example: "This chat is for discussing the current project."
- *                 type:
- *                   type: string
- *                   enum: [private, group]
- *                   description: The type of chat
- *                   example: "group"
- *                 members:
- *                   type: array
- *                   items:
- *                     type: string
- *                   description: List of user identifiers
- *                   example: ["user1", "user2", "user3"]
- *                 creator:
- *                   type: string
- *                   description: Identifier of        the chat creator
- *                   example: "user1"
- *       '400':
- *         description: Validation error
- *       '500':
- *         description: Internal server error
- */
-
 export function createChatController(app) {
   const chatService = diContainer.resolve(SERVICES.chats);
+
+  /**
+   * @swagger
+   * /chats:
+   *   post:
+   *     summary: Create a new chat
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               name:
+   *                 type: string
+   *                 description: The name of the chat
+   *                 example: "Project Discussion"
+   *               description:
+   *                 type: string
+   *                 description: The description of the chat
+   *                 example: "This chat is for discussing the current project."
+   *               type:
+   *                 type: string
+   *                 enum: [private, group]
+   *                 description: The type of chat
+   *                 example: "group"
+   *               members:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                 description: List of user identifiers
+   *                 example: ["user1", "user2", "user3"]
+   *               creator:
+   *                 type: string
+   *                 description: Identifier of the chat creator
+   *                 example: "user1"
+   *     responses:
+   *       '201':
+   *         description: Chat successfully created
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 id:
+   *                   type: string
+   *                   description: Identifier of the created chat
+   *                   example: "chat1"
+   *                 name:
+   *                   type: string
+   *                   description: The name of the chat
+   *                   example: "Project Discussion"
+   *                 description:
+   *                   type: string
+   *                   description: The description of the chat
+   *                   example: "This chat is for discussing the current project."
+   *                 type:
+   *                   type: string
+   *                   enum: [private, group]
+   *                   description: The type of chat
+   *                   example: "group"
+   *                 members:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   *                   description: List of user identifiers
+   *                   example: ["user1", "user2", "user3"]
+   *                 creator:
+   *                   type: string
+   *                   description: Identifier of        the chat creator
+   *                   example: "user1"
+   *       '400':
+   *         description: Validation error
+   *       '500':
+   *         description: Internal server error
+   */
 
   app.post('/api/v1/chats', authMiddleware, async (req, res) => {
     try {

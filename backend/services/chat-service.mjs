@@ -9,11 +9,21 @@ export function chatService() {
   }
 
   async function deleteChat(chatId) {
-    return chatDao.deleteChatById(chatId);
+    return await chatDao.deleteChatById(chatId);
+  }
+
+  async function updateChat(id, updateData) {
+    return await chatDao.updateChat(id, updateData);
+  }
+
+  async function getChatById(chatId){
+    return await chatDao.getChatById(chatId)
   }
 
   return {
     createChat,
     deleteChat,
+    updateChat,
+    getChatById
   };
 }

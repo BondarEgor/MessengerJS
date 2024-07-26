@@ -42,19 +42,46 @@ export class ChatDao {
   }
 
   doesChatExist(chats, chatName) {
-    return !!Object.values(chats).some(chat => chat.name === chatName);
+    return !!Object.values(chats).some((chat) => chat.name === chatName);
   }
 
-	async deleteChatById(chatId){
-		const chats = await this.#readChats()
-		const isChatPresent = !!chats[chatId]
+  async deleteChatById(chatId) {
+    const chats = await this.#readChats();
+    const isChatPresent = !!chats[chatId];
 
-		if(!isChatPresent){
-			throw new Error('Chat not found')
-		}
+    if (!isChatPresent) {
+      throw new Error('Chat not found');
+    }
 
-		delete chats[chatId]
+    delete chats[chatId];
 
-		return await this.#writeChats(chats)
-	}
+    return await this.#writeChats(chats);
+  }
+
+  async updateChat(chatId, updateData) {
+    const chats = await this.#readChats();
+    const isChatPresent = !!chats[chatId];
+
+    if (!isChatPresent) {
+      throw new Error('Chat not found');
+    }
+
+    chats[chatId] = {
+      ...chats[chatId],
+      ...updateData,
+    };
+
+    return await this.#writeChats(chats);
+  }
+
+  async getChatById(chatId) {
+    const chats = await this.#readChats();
+    const isChatPresent = !!chats[chatId];
+
+    if (!isChatPresent) {
+      throw new Error('Chat not found');
+    }
+
+    return chats[chatId];
+  }
 }

@@ -36,9 +36,13 @@ export class ChatDao {
   }
 
   async #writeChats(chats) {
-    await fs.writeFile(this.#filePath, JSON.stringify(chats, null, 2));
+    try {
+      await fs.writeFile(this.#filePath, JSON.stringify(chats, null, 2));
 
-    return true;
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   doesChatExist(chats, chatName) {

@@ -45,6 +45,7 @@ export function createUsersController(app) {
    *       500:
    *         description: Внутренняя ошибка сервера
    */
+
   app.get('/api/v1/users', authMiddleware, async (_, res) => {
     try {
       const users = await userService.getAllUsers();
@@ -113,6 +114,7 @@ export function createUsersController(app) {
    *       500:
    *         description: Внутренняя ошибка сервера
    */
+
   app.put('/api/v1/users/:userId', authMiddleware, async (req, res) => {
     const { userId } = req.params;
 
@@ -159,6 +161,7 @@ export function createUsersController(app) {
    *       500:
    *         description: Внутренняя ошибка сервера
    */
+
   app.delete('/api/v1/users/:userId', authMiddleware, async (req, res) => {
     const { userId } = req.params;
 

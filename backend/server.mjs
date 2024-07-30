@@ -4,7 +4,7 @@ import express from 'express';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { createAuthController } from './controllers/auth-controller.mjs';
-import { createChatController } from './controllers/chat-controller.mjs';
+import { createMessageController } from './controllers/message-controller.mjs';
 import { createRegistrationController } from './controllers/registration-controller.mjs';
 import { createUsersController } from './controllers/users-controller.mjs';
 import { SessionDao } from './dao/sessionDao.mjs';
@@ -16,6 +16,9 @@ import { messageService } from './services/message-service.mjs';
 import { registrationService } from './services/registration-service.mjs';
 import { sessionService } from './services/session-service.mjs';
 import { usersService } from './services/users-service.mjs';
+import { createChatController } from './controllers/chat-controller.mjs';
+import { chatService } from './services/chat-service.mjs';
+import { ChatDao } from './dao/chatDao.mjs';
 
 const app = express();
 
@@ -46,12 +49,15 @@ diContainer.register(SERVICES.authorization, authService);
 diContainer.register(SERVICES.sessionsDao, new SessionDao());
 diContainer.register(SERVICES.sessions, sessionService);
 diContainer.register(SERVICES.users, usersService);
+diContainer.register(SERVICES.chats, chatService);
+diContainer.register(SERVICES.chatsDao, new ChatDao());
 
 createRegistrationController(app);
 createAuthController(app);
 
-createChatController(app);
+createMessageController(app);
 createUsersController(app);
+createChatController(app);
 
 const PORT = 3000;
 app.listen(PORT, () => {

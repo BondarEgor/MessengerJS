@@ -33,5 +33,7 @@ Thumbs.db
 users.json
 # Sessions
 sessions.json
+# Chats
+chats.json
 # Ignore all generated/static files (can be modified as per your project structure)
 /static/**

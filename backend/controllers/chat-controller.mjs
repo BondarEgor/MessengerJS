@@ -93,6 +93,7 @@ export function createChatController(app) {
         .status(201)
         .json({ message: 'Chat successfully created', chat: newChat });
     } catch (e) {
+      console.error(e)
       res.status(400).json({ error: e.message });
     }
   });
@@ -175,6 +176,7 @@ export function createChatController(app) {
 
       res.status(200).json(deletedChat);
     } catch (e) {
+      console.error(e)
       res.status(400).json({ error: e.message });
     }
   });
@@ -263,6 +265,7 @@ export function createChatController(app) {
 
       res.status(200).json('Chat successfully updated');
     } catch (e) {
+      console.error(e)
       res.status(400).json({ error: e.message });
     }
   });
@@ -329,6 +332,7 @@ export function createChatController(app) {
 
       res.status(200).json(chatById);
     } catch (e) {
+      console.error(e)
       res.status(400).json({ error: e.message });
     }
   });

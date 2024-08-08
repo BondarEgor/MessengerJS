@@ -52,6 +52,7 @@ export function createAuthController(app) {
 
       res.status(200).json(userSessionInfo);
     } catch (e) {
+      console.error(e)
       res.status(401).json(`Unauthorized ${e}`);
     }
   });

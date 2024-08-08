@@ -35,5 +35,7 @@ users.json
 sessions.json
 # Chats
 chats.json
+# Messages
+messages.json
 # Ignore all generated/static files (can be modified as per your project structure)
 /static/**

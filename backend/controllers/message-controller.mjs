@@ -170,6 +170,7 @@ export function createMessageController(app) {
 
       return res.status(200).json(messagesByChatId);
     } catch (e) {
+      console.error(e)
       return res.status(404).json({
         message: e.message,
       });
@@ -224,6 +225,7 @@ export function createMessageController(app) {
 
         return res.status(200).json(messagesById);
       } catch (e) {
+        console.error(e)
         return res.status(404).json({
           message: e.message,
         });
@@ -231,7 +233,7 @@ export function createMessageController(app) {
     }
   );
 
-   /**
+  /**
    * @swagger
    * /api/v1/{chatId}/messages/{messageId}:
    *   put:
@@ -285,7 +287,7 @@ export function createMessageController(app) {
 
       if (!content) {
         return res.status(400).json({
-          message: 'To update - provide message content',
+          message: 'no content',
         });
       }
 
@@ -298,6 +300,7 @@ export function createMessageController(app) {
 
         return res.status(200).json(updatedMessage);
       } catch (e) {
+        console.error(e)
         return res.status(404).json({
           message: e.message,
         });
@@ -337,7 +340,7 @@ export function createMessageController(app) {
    *       404:
    *         description: Сообщение не найдено
    */
-  
+
   app.delete(
     '/api/v1/:chatId/messages/:messageId',
     authMiddleware,
@@ -357,9 +360,10 @@ export function createMessageController(app) {
         );
 
         res.status(200).json({
-          id: deletedMessageId
+          id: deletedMessageId,
         });
       } catch (error) {
+        console.error(error);
         res.status(400).json(error.message);
       }
     }

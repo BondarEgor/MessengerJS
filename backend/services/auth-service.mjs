@@ -23,7 +23,8 @@ export function authService() {
       } else {
         throw new Error('Password not valid');
       }
-    } catch (error) {
+    } catch (e) {
+      console.error(e)
       throw error;
     }
   }

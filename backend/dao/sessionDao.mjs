@@ -14,7 +14,8 @@ export class SessionDao {
       const data = await fs.readFile(this.#filePath, 'utf-8');
 
       return JSON.parse(data);
-    } catch (_) {
+    } catch (e) {
+      console.error(e);
       await fs.writeFile(this.#filePath, JSON.stringify({}));
     }
   }
@@ -51,7 +52,8 @@ export class SessionDao {
       await fs.writeFile(this.#filePath, JSON.stringify(sessions, null, 2));
 
       return true;
-    } catch (_) {
+    } catch (e) {
+      console.error(e)
       return false;
     }
   }

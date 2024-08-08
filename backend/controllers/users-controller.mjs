@@ -51,6 +51,7 @@ export function createUsersController(app) {
       const users = await userService.getAllUsers();
       res.status(200).json(users);
     } catch (e) {
+      console.error(e)
       res.status(500).json({ message: e.message });
     }
   });
@@ -128,6 +129,7 @@ export function createUsersController(app) {
 
       res.status(200).json(updatedUserInfo);
     } catch (e) {
+      console.error(e)
       console.error(`Faced error updating user: ${e}`);
       res.status(500).json({ message: e.message });
     }
@@ -174,6 +176,7 @@ export function createUsersController(app) {
 
       res.json(deleteUserId);
     } catch (e) {
+      console.error(e)
       res.status(404).json(`User can't be deleted`);
     }
   });

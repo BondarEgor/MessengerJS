@@ -15,12 +15,20 @@ export class UserDao {
     try {
       const data = await fs.readFile(this.#filePath, 'utf-8');
       return JSON.parse(data);
-    } catch (_) {
+    } catch (e) {
+      console.error(e)
       await fs.writeFile(this.#filePath, JSON.stringify([]));
     }
   }
   async #writeUsers(users) {
-    await fs.writeFile(this.#filePath, JSON.stringify(users, null, 2));
+    try {
+      await fs.writeFile(this.#filePath, JSON.stringify(users, null, 2));
+
+      return true;
+    } catch (e) {
+      console.error(e)
+      return false;
+    }
   }
 
   async #isUserExists(userId) {
@@ -87,6 +95,7 @@ export class UserDao {
 
       return userId;
     } catch (e) {
+      console.error(e)
       throw new Error(`Error deleting user: ${e.message}`);
     }
   }

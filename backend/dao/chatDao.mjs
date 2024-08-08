@@ -30,7 +30,8 @@ export class ChatDao {
     try {
       const data = await fs.readFile(this.#filePath, 'utf-8');
       return JSON.parse(data);
-    } catch (_) {
+    } catch (e) {
+      console.error(e)
       await fs.writeFile(this.#filePath, JSON.stringify({}));
     }
   }
@@ -40,7 +41,9 @@ export class ChatDao {
       await fs.writeFile(this.#filePath, JSON.stringify(chats, null, 2));
 
       return true;
-    } catch (_) {
+    } catch (e) {
+      console.error(e)
+
       return false;
     }
   }

@@ -6,7 +6,7 @@ export function createRegistrationController(app) {
 
   /**
    * @swagger
-   * /register:
+   * /api/v1/registration:
    *   post:
    *     summary: Регистрация нового пользователя
    *     requestBody:
@@ -53,11 +53,12 @@ export function createRegistrationController(app) {
       const isSuccess = await registrationService.registerNewUser(req.body);
 
       if (isSuccess) {
-        res.status(200).json({ message: 'User registererd successfully' });
+        res.status(201).json({ message: 'User registererd successfully' });
       } else {
         res.status(400).json({ message: 'User registration failed' });
       }
     } catch (error) {
+      console.error(error)
       res.status(500).json({ message: error.message });
     }
   });

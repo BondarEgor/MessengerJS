@@ -132,6 +132,31 @@ export function createMessageController(app) {
     res.status(201).json(newMessage);
   });
 
+  /**
+   * @swagger
+   * /api/v1/{chatId}/messages:
+   *   get:
+   *     summary: Получение всех сообщений по chatId
+   *     parameters:
+   *       - in: path
+   *         name: chatId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Уникальный идентификатор чата
+   *     responses:
+   *       200:
+   *         description: Успешное получение сообщений
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/Message'
+   *       400:
+   *         description: Ошибка в запросе
+   */
+
   app.get('/api/v1/:chatId/messages', authMiddleware, async (req, res) => {
     const { chatId } = req.params;
 
@@ -150,6 +175,35 @@ export function createMessageController(app) {
       });
     }
   });
+
+  /**
+   * @swagger
+   * /api/v1/{chatId}/messages/{messageId}:
+   *   get:
+   *     summary: Получение сообщения по chatId и messageId
+   *     parameters:
+   *       - in: path
+   *         name: chatId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Уникальный идентификатор чата
+   *       - in: path
+   *         name: messageId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Уникальный идентификатор сообщения
+   *     responses:
+   *       200:
+   *         description: Успешное получение сообщения
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Message'
+   *       404:
+   *         description: Сообщение не найдено
+   */
 
   app.get(
     '/api/v1/:chatId/messages/:messageId',
@@ -176,6 +230,45 @@ export function createMessageController(app) {
       }
     }
   );
+
+   /**
+   * @swagger
+   * /api/v1/{chatId}/messages/{messageId}:
+   *   put:
+   *     summary: Обновление сообщения по chatId и messageId
+   *     parameters:
+   *       - in: path
+   *         name: chatId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Уникальный идентификатор чата
+   *       - in: path
+   *         name: messageId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Уникальный идентификатор сообщения
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               content:
+   *                 type: string
+   *                 description: Обновленный текст сообщения
+   *     responses:
+   *       200:
+   *         description: Сообщение успешно обновлено
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Message'
+   *       404:
+   *         description: Сообщение не найдено
+   */
 
   app.put(
     '/api/v1/:chatId/messages/:messageId',
@@ -212,6 +305,39 @@ export function createMessageController(app) {
     }
   );
 
+  /**
+   * @swagger
+   * /api/v1/{chatId}/messages/{messageId}:
+   *   delete:
+   *     summary: Удаление сообщения по chatId и messageId
+   *     parameters:
+   *       - in: path
+   *         name: chatId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Уникальный идентификатор чата
+   *       - in: path
+   *         name: messageId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Уникальный идентификатор сообщения
+   *     responses:
+   *       200:
+   *         description: Сообщение успешно удалено
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 id:
+   *                   type: string
+   *                   description: Уникальный идентификатор удаленного сообщения
+   *       404:
+   *         description: Сообщение не найдено
+   */
+  
   app.delete(
     '/api/v1/:chatId/messages/:messageId',
     authMiddleware,

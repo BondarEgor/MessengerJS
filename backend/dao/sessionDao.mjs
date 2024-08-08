@@ -12,6 +12,7 @@ export class SessionDao {
   async #readSessions() {
     try {
       const data = await fs.readFile(this.#filePath, 'utf-8');
+
       return JSON.parse(data);
     } catch (_) {
       await fs.writeFile(this.#filePath, JSON.stringify({}));
@@ -46,9 +47,13 @@ export class SessionDao {
   }
 
   async #writeSessions(sessions) {
-    await fs.writeFile(this.#filePath, JSON.stringify(sessions, null, 2));
+    try {
+      await fs.writeFile(this.#filePath, JSON.stringify(sessions, null, 2));
 
-    return true;
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   async updateSession(userId, updatedSessionInfo) {

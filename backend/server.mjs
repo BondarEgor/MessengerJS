@@ -19,6 +19,7 @@ import { usersService } from './services/users-service.mjs';
 import { createChatController } from './controllers/chat-controller.mjs';
 import { chatService } from './services/chat-service.mjs';
 import { ChatDao } from './dao/chatDao.mjs';
+import { MessagesDao } from './dao/messageDao.mjs'
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 diContainer.register(SERVICES.userDao, new UserDao());
 diContainer.register(SERVICES.messages, messageService);
+diContainer.register(SERVICES.messagesDao, new MessagesDao())
 diContainer.register(SERVICES.registration, registrationService);
 diContainer.register(SERVICES.authorization, authService);
 diContainer.register(SERVICES.sessionsDao, new SessionDao());

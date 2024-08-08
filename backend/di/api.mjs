@@ -1,5 +1,6 @@
 export const SERVICES = {
   messages: 'messageService',
+  messagesDao: 'MessageDao',
   authorization: 'authService',
   registration: 'registrationService',
   userDao: 'UserDao',

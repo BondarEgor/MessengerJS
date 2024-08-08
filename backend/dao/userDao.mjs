@@ -20,7 +20,13 @@ export class UserDao {
     }
   }
   async #writeUsers(users) {
-    await fs.writeFile(this.#filePath, JSON.stringify(users, null, 2));
+    try {
+      await fs.writeFile(this.#filePath, JSON.stringify(users, null, 2));
+
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   async #isUserExists(userId) {

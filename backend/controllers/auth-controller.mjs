@@ -6,7 +6,7 @@ export function createAuthController(app) {
 
   /**
    * @swagger
-   * /login:
+   * /api/v1/login:
    *   post:
    *     summary: Авторизация пользователя
    *     requestBody:
@@ -30,9 +30,11 @@ export function createAuthController(app) {
    *             schema:
    *               type: object
    *               properties:
-   *                 token:
+   *                 userId:
    *                   type: string
    *                   description: JWT токен доступа
+   *                 authToken:
+   *                   type: string
    *       401:
    *         description: Неправильные учётные данные
    *       500:
@@ -48,7 +50,7 @@ export function createAuthController(app) {
         password
       );
 
-      res.status(201).json(userSessionInfo);
+      res.status(200).json(userSessionInfo);
     } catch (e) {
       res.status(401).json(`Unauthorized ${e}`);
     }

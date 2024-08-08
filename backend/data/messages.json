@@ -1,0 +1,27 @@
+{
+  "3": {
+    "0f61b020-1bd3-42aa-b0db-8b47f7e52898": {
+      "author": "Egor",
+      "chatId": 3,
+      "timestamp": "123",
+      "content": "fourth message",
+      "id": "0f61b020-1bd3-42aa-b0db-8b47f7e52898"
+    },
+    "25050ab7-93e8-4083-a1c5-7a7c3e3f6231": {
+      "author": "Egor",
+      "chatId": 3,
+      "timestamp": "123",
+      "content": "fourth message",
+      "id": "25050ab7-93e8-4083-a1c5-7a7c3e3f6231"
+    }
+  },
+  "4": {
+    "5700c13f-dfa7-49a9-9215-4f3e117cf0d3": {
+      "author": "Egor",
+      "chatId": 4,
+      "timestamp": "123",
+      "content": "Third message",
+      "id": "5700c13f-dfa7-49a9-9215-4f3e117cf0d3"
+    }
+  }
+}

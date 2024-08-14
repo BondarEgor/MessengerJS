@@ -20,10 +20,15 @@ export function chatService() {
     return await chatDao.getChatById(chatId)
   }
 
+  async function getAllChats() {
+    return await chatDao.getAllChats()
+  }
+
   return {
     createChat,
     deleteChat,
     updateChat,
-    getChatById
+    getChatById,
+    getAllChats
   };
 }

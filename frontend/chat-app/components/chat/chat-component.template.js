@@ -1,7 +1,7 @@
-import {getChatComponentStyles} from './chat-component.styles.js';
+import { getChatComponentStyles } from './chat-component.styles.js'
 
 export function createTemplate(messages = []) {
-    return `
+	return `
     ${getChatComponentStyles()}
     
     <div class="chat-text"></div>
@@ -10,13 +10,17 @@ export function createTemplate(messages = []) {
         hello from chat
     
         <ul> 
-         ${messages.map(({id, author, message}) => `<li>
+         ${messages
+						.map(
+							({ id, author, message }) => `<li>
                                                                 <span>ID: ${id}</span> 
                                                                 <span>Author: ${author}</span> 
                                                                 <span>Message: ${message}</span> 
-                                                           </li>`).join('')}
+                                                           </li>`
+						)
+						.join('')}
         </ul>
          
     </div>
-    `;
+    `
 }

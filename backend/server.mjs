@@ -19,13 +19,43 @@ import { usersService } from './services/users-service.mjs';
 import { createChatController } from './controllers/chat-controller.mjs';
 import { chatService } from './services/chat-service.mjs';
 import { ChatDao } from './dao/chatDao.mjs';
-import { MessagesDao } from './dao/messageDao.mjs'
+import { MessagesDao } from './dao/messageDao.mjs';
+import { Server as SocketIOServer } from 'socket.io';
+import http from 'http';
 
 const app = express();
+const server = http.createServer(app);
+const io = new SocketIOServer(server, {
+  serverClient: false,
+});
+
 
 // Использование CORS middleware для разрешения кросс-доменных запросов
 app.use(cors());
 app.use(bodyParser.json());
+
+//Настройка сокета
+io.on('connection', (socket) => {
+  console.log('A user connected', socket.id);
+
+  socket.on('getChats', async () => {
+    const service = diContainer.resolve(SERVICES.chats);
+    const chats = await service.getAllChats()
+    console.log(chats)
+    socket.emit(chats);
+  });
+
+  socket.on('getMessages', async () => {
+    const service = diContainer.resolve(SERVICES.messages);
+    const messages = await service.getMessagesByChatId(3);
+    console.log(messages)
+    socket.emit(messages);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
 
 // Загрузка документации Swagger
 const swaggerOptions = {
@@ -45,7 +75,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 diContainer.register(SERVICES.userDao, new UserDao());
 diContainer.register(SERVICES.messages, messageService);
-diContainer.register(SERVICES.messagesDao, new MessagesDao())
+diContainer.register(SERVICES.messagesDao, new MessagesDao());
 diContainer.register(SERVICES.registration, registrationService);
 diContainer.register(SERVICES.authorization, authService);
 diContainer.register(SERVICES.sessionsDao, new SessionDao());
@@ -62,6 +92,6 @@ createUsersController(app);
 createChatController(app);
 
 const PORT = 3000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

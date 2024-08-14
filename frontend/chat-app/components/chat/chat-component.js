@@ -14,6 +14,7 @@ export class ChatComponent extends HTMLElement {
     }
 
     #listeners = [
+
         [select.bind(this, ".chat"), "click", this.#addEventListeners.bind(this)],
     ];
 
@@ -31,9 +32,14 @@ export class ChatComponent extends HTMLElement {
     }
 
     connectedCallback() {
-        this.#messageService
-            .getMessagesByChatId(3)
-            .then(data => this.#render(data))
+        // this.#messageService
+        //     .getMessagesByChatId(3)
+        //     .then(data => this.#render(data))
+        this.#render([
+            {message: 'qwe', id: 1, author: '123'},
+            {message: 'qwe', id: 1, author: '123'},
+            {message: 'qwe', id: 1, author: '123'},
+        ])
 
         this.#listeners.forEach(addListeners.bind(this));
 

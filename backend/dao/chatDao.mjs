@@ -91,4 +91,8 @@ export class ChatDao {
 
     return chats[chatId];
   }
+
+  async getAllChats() {
+    return await this.#readChats()
+  }
 }

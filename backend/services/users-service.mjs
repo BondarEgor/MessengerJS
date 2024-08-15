@@ -20,10 +20,15 @@ export function usersService() {
     return await userDao.getAllUsers();
   }
 
+  async function getUserStatus() {
+    return await userDao.getUserStatus();
+  }
+
   return {
     getUserById,
     updateUser,
     deleteUserById,
     getAllUsers,
+    getUserStatus,
   };
 }

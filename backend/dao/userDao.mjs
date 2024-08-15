@@ -16,7 +16,7 @@ export class UserDao {
       const data = await fs.readFile(this.#filePath, 'utf-8');
       return JSON.parse(data);
     } catch (e) {
-      console.error(e)
+      console.error(e);
       await fs.writeFile(this.#filePath, JSON.stringify([]));
     }
   }
@@ -26,7 +26,7 @@ export class UserDao {
 
       return true;
     } catch (e) {
-      console.error(e)
+      console.error(e);
       return false;
     }
   }
@@ -95,7 +95,7 @@ export class UserDao {
 
       return userId;
     } catch (e) {
-      console.error(e)
+      console.error(e);
       throw new Error(`Error deleting user: ${e.message}`);
     }
   }
@@ -112,5 +112,9 @@ export class UserDao {
     await this.#writeUsers(users);
 
     return users[userId];
+  }
+
+  async getUserStatus() {
+    //TODO: здесь сделать логику получения статуса юзера и подумать над сигнатурой
   }
 }

@@ -41,15 +41,22 @@ io.on('connection', (socket) => {
   socket.on('getChats', async () => {
     const service = diContainer.resolve(SERVICES.chats);
     const chats = await service.getAllChats()
-    console.log(chats)
+
     socket.emit(chats);
   });
 
   socket.on('getMessages', async () => {
     const service = diContainer.resolve(SERVICES.messages);
     const messages = await service.getMessagesByChatId(3);
-    console.log(messages)
+
     socket.emit(messages);
+  });
+
+  socket.on('getUserStatus', async () => {
+    const service = diContainer.resolve(SERVICES.users);
+    const userStatus = await service.getMessagesByChatId();
+
+    socket.emit(userStatus);
   });
 
   socket.on('disconnect', () => {

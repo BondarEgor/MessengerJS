@@ -113,8 +113,4 @@ export class UserDao {
 
     return users[userId];
   }
-
-  async getUserStatus() {
-    //TODO: здесь сделать логику получения статуса юзера и подумать над сигнатурой
-  }
 }

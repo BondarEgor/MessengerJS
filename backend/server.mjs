@@ -22,6 +22,7 @@ import { ChatDao } from './dao/chatDao.mjs';
 import { MessagesDao } from './dao/messageDao.mjs';
 import { Server as SocketIOServer } from 'socket.io';
 import http from 'http';
+import { createWebSocketController } from './controllers/websocket-controller.mjs';
 
 const app = express();
 const server = http.createServer(app);
@@ -29,40 +30,12 @@ const io = new SocketIOServer(server, {
   serverClient: false,
 });
 
-
 // Использование CORS middleware для разрешения кросс-доменных запросов
 app.use(cors());
 app.use(bodyParser.json());
 
 //Настройка сокета
-io.on('connection', (socket) => {
-  console.log('A user connected', socket.id);
-
-  socket.on('getChats', async () => {
-    const service = diContainer.resolve(SERVICES.chats);
-    const chats = await service.getAllChats()
-
-    socket.emit(chats);
-  });
-
-  socket.on('getMessages', async () => {
-    const service = diContainer.resolve(SERVICES.messages);
-    const messages = await service.getMessagesByChatId(3);
-
-    socket.emit(messages);
-  });
-
-  socket.on('getUserStatus', async () => {
-    const service = diContainer.resolve(SERVICES.users);
-    const userStatus = await service.getMessagesByChatId();
-
-    socket.emit(userStatus);
-  });
-
-  socket.on('disconnect', () => {
-    console.log('User disconnected');
-  });
-});
+createWebSocketController(io)
 
 // Загрузка документации Swagger
 const swaggerOptions = {

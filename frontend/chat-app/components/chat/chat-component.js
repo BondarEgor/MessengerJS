@@ -32,9 +32,6 @@ export class ChatComponent extends HTMLElement {
     }
 
     connectedCallback() {
-        // this.#messageService
-        //     .getMessagesByChatId(3)
-        //     .then(data => this.#render(data))
         this.#render([
             {message: 'qwe', id: 1, author: '123'},
             {message: 'qwe', id: 1, author: '123'},

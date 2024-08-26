@@ -3,14 +3,13 @@ import { diContainer } from '../di/di.mjs';
 
 export function messageService() {
   const messagesDao = diContainer.resolve(SERVICES.messagesDao);
-
-  function generateMockMessages(chatId) {
-    const messages = messagesDao.getMessages(chatId);
-    return messages;
-  }
+  const eventEmitter = diContainer.resolve(SERVICES.events);
 
   async function createMessage(messageData) {
-    return await messagesDao.createMessage(messageData);
+    const message = await messageData.createMessage(messageData);
+    eventEmitter.emit(message);
+
+    return message;
   }
 
   async function getMessagesByChatId(chatId) {
@@ -22,19 +21,31 @@ export function messageService() {
   }
 
   async function updateMessageById(chatId, messageId, content) {
-    return await messagesDao.updateMessageById(chatId, messageId, content);
-  }  
-  
-  async function deleteMessageById(chatId, messageId, ) {
-    return await messagesDao.deleteMessageById(chatId, messageId);
+    const updatedMessage = messagesDao.updateMessageById(
+      chatId,
+      messageId,
+      content
+    );
+    eventEmitter.emit(updatedMessage);
+
+    return updatedMessage;
+  }
+
+  async function deleteMessageById(chatId, messageId) {
+    const deletedMessage = await messagesDao.deleteMessageById(
+      chatId,
+      messageId
+    );
+    eventEmitter.emit(deletedMessage);
+
+    return deletedMessage;
   }
 
   return {
-    getMessages: generateMockMessages,
     createMessage,
     getMessagesByChatId,
     getMessageById,
     updateMessageById,
-    deleteMessageById
+    deleteMessageById,
   };
 }

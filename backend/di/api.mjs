@@ -8,5 +8,6 @@ export const SERVICES = {
   sessions: 'sessionService',
   sessionsDao: 'SessionDao',
   chats:'chatService',
-  chatsDao: 'ChatDao'
+  chatsDao: 'ChatDao',
+  events: 'eventEmitter' 
 };

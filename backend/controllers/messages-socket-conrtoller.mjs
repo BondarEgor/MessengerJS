@@ -1,6 +1,5 @@
 import { diContainer } from '../di/di.mjs';
 import { SERVICES } from '../di/api.mjs';
-
 /**
  * @swagger
  * tags:
@@ -50,7 +49,7 @@ import { SERVICES } from '../di/api.mjs';
  */
 
 export function getMessagesSocketController(socket) {
-  socket.on('getMessages', async (response) => {
+  socket.on('messages', async (response) => {
     const { chatId } = response;
     const service = diContainer.resolve(SERVICES.messages);
     const messages = await service.getMessagesByChatId(chatId);

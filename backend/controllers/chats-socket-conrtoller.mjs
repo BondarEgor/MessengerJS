@@ -35,7 +35,7 @@ import { SERVICES } from '../di/api.mjs';
  */
 
 export function getChatsSocketController(socket) {
-  socket.on('getChats', async () => {
+  socket.on('chats', async () => {
     const service = diContainer.resolve(SERVICES.chats);
     const chats = await service.getAllChats();
 

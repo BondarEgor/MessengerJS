@@ -23,6 +23,7 @@ import { MessagesDao } from './dao/messageDao.mjs';
 import { Server as SocketIOServer } from 'socket.io';
 import http from 'http';
 import { createWebSocketController } from './controllers/websocket-controller.mjs';
+import EventEmitter from 'node:events';
 
 const app = express();
 const server = http.createServer(app);
@@ -53,6 +54,7 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+diContainer.register(SERVICES.events, new EventEmitter())
 diContainer.register(SERVICES.userDao, new UserDao());
 diContainer.register(SERVICES.messages, messageService);
 diContainer.register(SERVICES.messagesDao, new MessagesDao());

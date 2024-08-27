@@ -3,35 +3,35 @@ import { diContainer } from '../di/di.mjs';
 
 export function chatService() {
   const chatDao = diContainer.resolve(SERVICES.chatsDao);
-  const eventEmitter = diContainer.resolve(SERVICES.events)
+  const eventEmitter = diContainer.resolve(SERVICES.events);
 
   async function createChat(chatData) {
-    const chat = await chatDao.createChat(chatData)
-    eventEmitter.emit(chat)
+    const chat = await chatDao.createChat(chatData);
+    eventEmitter.emit('createChat', chat);
 
-    return chat
+    return chat;
   }
 
   async function deleteChat(chatId) {
-    const deletedChat = await chatDao.deleteChatById(chatId);
-    eventEmitter.emit(deletedChat)
+    const isDeleted = await chatDao.deleteChatById(chatId);
+    eventEmitter.emit('deleteChat', isDeleted);
 
-    return deletedChat
+    return isDeleted;
   }
 
   async function updateChat(id, updateData) {
-    const updatedChat = await chatDao.updateChat(id, updateData); 
-    eventEmitter(updatedChat)
+    const updatedChat = await chatDao.updateChat(id, updateData);
+    eventEmitter('updateChat', updatedChat);
 
-    return updatedChat
+    return updatedChat;
   }
 
-  async function getChatById(chatId){
-    return await chatDao.getChatById(chatId)
+  async function getChatById(chatId) {
+    return await chatDao.getChatById(chatId);
   }
 
   async function getAllChats() {
-    return await chatDao.getAllChats()
+    return await chatDao.getAllChats();
   }
 
   return {
@@ -39,6 +39,6 @@ export function chatService() {
     deleteChat,
     updateChat,
     getChatById,
-    getAllChats
+    getAllChats,
   };
 }

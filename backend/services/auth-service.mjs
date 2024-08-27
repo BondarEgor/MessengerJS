@@ -13,9 +13,9 @@ export function authService() {
       if (!user) {
         throw new Error('User is not registered');
       }
-      
+
       const isPassEqual = await isPasswordCorrect(userPassword, user.password);
-      
+
       if (isPassEqual) {
         const sessionInfo = await sessionService.generateSessionInfo(user);
 
@@ -24,7 +24,7 @@ export function authService() {
         throw new Error('Password not valid');
       }
     } catch (e) {
-      console.error(e)
+      console.error(e);
       throw error;
     }
   }

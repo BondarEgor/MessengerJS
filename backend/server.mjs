@@ -36,7 +36,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 //Настройка сокета
-createWebSocketController(io)
+createWebSocketController(io);
 
 // Загрузка документации Swagger
 const swaggerOptions = {
@@ -54,7 +54,7 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-diContainer.register(SERVICES.events, new EventEmitter())
+diContainer.register(SERVICES.events, new EventEmitter());
 diContainer.register(SERVICES.userDao, new UserDao());
 diContainer.register(SERVICES.messages, messageService);
 diContainer.register(SERVICES.messagesDao, new MessagesDao());

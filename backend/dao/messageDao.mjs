@@ -16,7 +16,7 @@ export class MessagesDao {
 
       return JSON.parse(messages);
     } catch (e) {
-      console.error(e)
+      console.error(e);
       await fs.writeFile(this.#filePath, JSON.stringify({}));
     }
   }
@@ -27,7 +27,7 @@ export class MessagesDao {
 
       return true;
     } catch (e) {
-      console.error(e)
+      console.error(e);
       return false;
     }
   }

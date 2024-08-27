@@ -170,7 +170,7 @@ export function createMessageController(app) {
 
       return res.status(200).json(messagesByChatId);
     } catch (e) {
-      console.error(e)
+      console.error(e);
       return res.status(404).json({
         message: e.message,
       });
@@ -225,7 +225,7 @@ export function createMessageController(app) {
 
         return res.status(200).json(messagesById);
       } catch (e) {
-        console.error(e)
+        console.error(e);
         return res.status(404).json({
           message: e.message,
         });
@@ -300,7 +300,7 @@ export function createMessageController(app) {
 
         return res.status(200).json(updatedMessage);
       } catch (e) {
-        console.error(e)
+        console.error(e);
         return res.status(404).json({
           message: e.message,
         });

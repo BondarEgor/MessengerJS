@@ -7,7 +7,7 @@ export const SERVICES = {
   users: 'userService',
   sessions: 'sessionService',
   sessionsDao: 'SessionDao',
-  chats:'chatService',
+  chats: 'chatService',
   chatsDao: 'ChatDao',
-  events: 'eventEmitter' 
+  events: 'eventEmitter',
 };

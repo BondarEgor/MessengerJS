@@ -33,6 +33,8 @@ export class ChatDao {
     } catch (e) {
       console.error(e)
       await fs.writeFile(this.#filePath, JSON.stringify({}));
+
+      throw e
     }
   }
 
@@ -81,7 +83,7 @@ export class ChatDao {
     return await this.#writeChats(chats);
   }
 
-  async getChatById(chatId) {
+  async ChatById(chatId) {
     const chats = await this.#readChats();
     const isChatPresent = !!chats[chatId];
 
@@ -90,5 +92,9 @@ export class ChatDao {
     }
 
     return chats[chatId];
+  }
+
+  async getAllChats() {
+    return await this.#readChats()
   }
 }

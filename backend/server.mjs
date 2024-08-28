@@ -19,10 +19,9 @@ import { usersService } from './services/users-service.mjs';
 import { createChatController } from './controllers/chat-controller.mjs';
 import { chatService } from './services/chat-service.mjs';
 import { ChatDao } from './dao/chatDao.mjs';
-import { MessagesDao } from './dao/messageDao.mjs'
-
+import { MessagesDao } from './dao/messageDao.mjs';
+import { SseService } from './services/sse-service.mjs';
 const app = express();
-
 // Использование CORS middleware для разрешения кросс-доменных запросов
 app.use(cors());
 app.use(bodyParser.json());
@@ -43,9 +42,10 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+diContainer.register(SERVICES.sse, new SseService());
 diContainer.register(SERVICES.userDao, new UserDao());
 diContainer.register(SERVICES.messages, messageService);
-diContainer.register(SERVICES.messagesDao, new MessagesDao())
+diContainer.register(SERVICES.messagesDao, new MessagesDao());
 diContainer.register(SERVICES.registration, registrationService);
 diContainer.register(SERVICES.authorization, authService);
 diContainer.register(SERVICES.sessionsDao, new SessionDao());
@@ -60,6 +60,7 @@ createAuthController(app);
 createMessageController(app);
 createUsersController(app);
 createChatController(app);
+
 
 const PORT = 3000;
 app.listen(PORT, () => {

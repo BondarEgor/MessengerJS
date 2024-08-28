@@ -4,6 +4,7 @@ import { authMiddleware } from '../middlewares/authMiddleware.mjs';
 
 export function createChatController(app) {
   const chatService = diContainer.resolve(SERVICES.chats);
+  const sseService = diContainer.resolve(SERVICES.sse);
 
   /**
    * @swagger
@@ -89,11 +90,12 @@ export function createChatController(app) {
         res.status(400).json({ error: 'Error while creating chat' });
       }
 
+      sseService.sendEvent({ message: 'New chat create', chat: newChat });
       res
         .status(201)
         .json({ message: 'Chat successfully created', chat: newChat });
     } catch (e) {
-      console.error(e)
+      console.error(e);
       res.status(400).json({ error: e.message });
     }
   });
@@ -174,9 +176,10 @@ export function createChatController(app) {
       const { id } = req.params;
       const deletedChat = await chatService.deleteChat(id);
 
+      sseService.sendEvent({ message: 'Deleted chat', deletedChat });
       res.status(200).json(deletedChat);
     } catch (e) {
-      console.error(e)
+      console.error(e);
       res.status(400).json({ error: e.message });
     }
   });
@@ -263,9 +266,10 @@ export function createChatController(app) {
       const { id } = req.params;
       const updatedChat = await chatService.updateChat(id, req.body);
 
-      res.status(200).json('Chat successfully updated');
+      sseService.sendEvent({ message: 'Chat updated', updatedChat });
+      res.status(200).json({ updatedChat });
     } catch (e) {
-      console.error(e)
+      console.error(e);
       res.status(400).json({ error: e.message });
     }
   });
@@ -332,8 +336,22 @@ export function createChatController(app) {
 
       res.status(200).json(chatById);
     } catch (e) {
-      console.error(e)
+      console.error(e);
       res.status(400).json({ error: e.message });
     }
+  });
+
+  app.get('/api/v1/chats', authMiddleware, async (req, res) => {
+    //Проставляем заголовки для настройки беспрерывного соединения
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    sseService.addClient(res);
+
+    req.on('close', () => {
+      sseService.removeClient(res);
+      res.end();
+    });
   });
 }

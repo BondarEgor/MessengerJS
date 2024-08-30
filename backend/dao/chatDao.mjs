@@ -31,10 +31,10 @@ export class ChatDao {
       const data = await fs.readFile(this.#filePath, 'utf-8');
       return JSON.parse(data);
     } catch (e) {
-      console.error(e)
+      console.error(e);
       await fs.writeFile(this.#filePath, JSON.stringify({}));
 
-      throw e
+      throw e;
     }
   }
 
@@ -44,7 +44,7 @@ export class ChatDao {
 
       return true;
     } catch (e) {
-      console.error(e)
+      console.error(e);
 
       return false;
     }
@@ -95,6 +95,6 @@ export class ChatDao {
   }
 
   async getAllChats() {
-    return await this.#readChats()
+    return await this.#readChats();
   }
 }

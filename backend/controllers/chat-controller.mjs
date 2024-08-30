@@ -4,7 +4,6 @@ import { authMiddleware } from '../middlewares/authMiddleware.mjs';
 
 export function createChatController(app) {
   const chatService = diContainer.resolve(SERVICES.chats);
-  const sseService = diContainer.resolve(SERVICES.sse);
 
   /**
    * @swagger
@@ -90,7 +89,6 @@ export function createChatController(app) {
         res.status(400).json({ error: 'Error while creating chat' });
       }
 
-      sseService.sendEvent({ message: 'New chat create', chat: newChat });
       res
         .status(201)
         .json({ message: 'Chat successfully created', chat: newChat });
@@ -176,7 +174,6 @@ export function createChatController(app) {
       const { id } = req.params;
       const deletedChat = await chatService.deleteChat(id);
 
-      sseService.sendEvent({ message: 'Deleted chat', deletedChat });
       res.status(200).json(deletedChat);
     } catch (e) {
       console.error(e);
@@ -266,7 +263,6 @@ export function createChatController(app) {
       const { id } = req.params;
       const updatedChat = await chatService.updateChat(id, req.body);
 
-      sseService.sendEvent({ message: 'Chat updated', updatedChat });
       res.status(200).json({ updatedChat });
     } catch (e) {
       console.error(e);
@@ -347,10 +343,10 @@ export function createChatController(app) {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    sseService.addClient(res);
+    chatService.subscribeToChatEvents(sendEvent);
 
     req.on('close', () => {
-      sseService.removeClient(res);
+      chatService.unsubscribeFromChatEvents();
       res.end();
     });
   });

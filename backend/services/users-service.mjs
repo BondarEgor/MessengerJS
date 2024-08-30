@@ -19,11 +19,20 @@ export function usersService() {
   async function getAllUsers() {
     return await userDao.getAllUsers();
   }
+  function subscribeToUserEvents(listener){
 
+  }
+
+  function unsubscribeFromUserEvents(){
+
+  }
+  
   return {
     getUserById,
     updateUser,
     deleteUserById,
     getAllUsers,
+    subscribeToUserEvents,
+    unsubscribeFromUserEvents
   };
 }

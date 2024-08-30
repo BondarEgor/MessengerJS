@@ -1,8 +1,10 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
+import EventEmitter from 'node:events';
 
 export function messageService() {
   const messagesDao = diContainer.resolve(SERVICES.messagesDao);
+  const messages = new EventEmitter();
 
   function generateMockMessages(chatId) {
     const messages = messagesDao.getMessages(chatId);
@@ -10,7 +12,14 @@ export function messageService() {
   }
 
   async function createMessage(messageData) {
-    return await messagesDao.createMessage(messageData);
+    const message = await messagesDao.createMessage(messageData);
+
+    return message;
+  }
+
+  async function createMessagesStream() {
+    const messages = messageService.getMessagesByChatId()
+    messages.emit('messages', )
   }
 
   async function getMessagesByChatId(chatId) {
@@ -22,11 +31,25 @@ export function messageService() {
   }
 
   async function updateMessageById(chatId, messageId, content) {
-    return await messagesDao.updateMessageById(chatId, messageId, content);
-  }  
-  
-  async function deleteMessageById(chatId, messageId, ) {
-    return await messagesDao.deleteMessageById(chatId, messageId);
+    const updatedMessage =  await messagesDao.updateMessageById(chatId, messageId, content);
+    messages.emit('chats', updatedMessage)
+
+    return updatedMessage
+  }
+
+  async function deleteMessageById(chatId, messageId) {
+    const deletedMessage = await messagesDao.deleteMessageById(chatId, messageId);
+    messages.emit(deletedMessage)
+    
+    return deletedMessage
+  }
+
+  function subscribe(callback){
+    messages.on('chats', callback)
+  }
+
+  function unsubscribe(callback){
+    messages.off('chats',callback)
   }
 
   return {
@@ -35,6 +58,8 @@ export function messageService() {
     getMessagesByChatId,
     getMessageById,
     updateMessageById,
-    deleteMessageById
+    deleteMessageById,
+    subscribe,
+    unsubscribe
   };
 }

@@ -128,8 +128,33 @@ export function createMessageController(app) {
     }
 
     const newMessage = await messageService.createMessage(req.body);
-
     res.status(201).json(newMessage);
+
+    req.on('close', () => {});
+  });
+
+  app.post('/api/v1/messages-stream', authMiddleware, async (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    const sendUpdate = async () => {
+      const { chatId } = req.body;
+      try {
+        const messages = await getMessagesByChatId(chatId);
+        res.write(JSON.stringify(messages));
+      } catch (error) {
+        console.error(error);
+        res.status(400).json({ error: error.message });
+      }
+    };
+
+    messageService.subscribe(sendUpdate)
+
+    req.on('close', () => {
+      console.log('Connection closed');
+      messageService.unsubscribe(sendUpdate)
+    })
   });
 
   /**
@@ -165,12 +190,13 @@ export function createMessageController(app) {
         message: 'Provide chatId',
       });
     }
+
     try {
       const messagesByChatId = await messageService.getMessagesByChatId(chatId);
 
       return res.status(200).json(messagesByChatId);
     } catch (e) {
-      console.error(e)
+      console.error(e);
       return res.status(404).json({
         message: e.message,
       });
@@ -225,7 +251,7 @@ export function createMessageController(app) {
 
         return res.status(200).json(messagesById);
       } catch (e) {
-        console.error(e)
+        console.error(e);
         return res.status(404).json({
           message: e.message,
         });
@@ -300,7 +326,7 @@ export function createMessageController(app) {
 
         return res.status(200).json(updatedMessage);
       } catch (e) {
-        console.error(e)
+        console.error(e);
         return res.status(404).json({
           message: e.message,
         });
@@ -308,6 +334,7 @@ export function createMessageController(app) {
     }
   );
 
+  app.put('/api/v1/:chatId/messages/:messageId', (req, res) => {});
   /**
    * @swagger
    * /api/v1/{chatId}/messages/{messageId}:

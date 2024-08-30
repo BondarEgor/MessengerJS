@@ -53,7 +53,7 @@ export class SessionDao {
 
       return true;
     } catch (e) {
-      console.error(e)
+      console.error(e);
       return false;
     }
   }

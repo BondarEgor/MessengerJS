@@ -61,7 +61,7 @@ export class MessagesDao {
 
     messages[chatId][messageId] = {
       ...messages[chatId][messageId],
-      status:'updated',
+      status: 'updated',
       content,
     };
 
@@ -77,12 +77,12 @@ export class MessagesDao {
       throw new Error('Message with this id does not exist');
     }
 
-    const currMessage = messages[chatId][messageId]
+    const currMessage = messages[chatId][messageId];
 
     messages[chatId][messageId] = {
       ...currMessage,
-      status:'deleted'
-    }
+      status: 'deleted',
+    };
 
     await this.#writeMessages(messages);
 

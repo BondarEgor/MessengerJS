@@ -4,43 +4,14 @@ import { authMiddleware } from '../middlewares/authMiddleware.mjs';
 
 export function createMessageController(app) {
   const messageService = diContainer.resolve(SERVICES.messages);
+  const subscribers = {};
 
-  /**
-   * @swagger
-   * /messages/{chatId}:
-   *   get:
-   *     summary: Получение массива случайных сообщений по chatId
-   *     parameters:
-   *       - in: path
-   *         name: chatId
-   *         required: true
-   *         schema:
-   *           type: string
-   *     responses:
-   *       200:
-   *         description: Массив случайных сообщений
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: array
-   *               items:
-   *                 type: object
-   *                 properties:
-   *                   id:
-   *                     type: string
-   *                   author:
-   *                     type: string
-   *                     description: Автор сообщения
-   *                   message:
-   *                     type: string
-   *                     description: Текст сообщения
-   */
-
-  app.get('/api/v1/messages/:chatId', authMiddleware, (req, res) => {
-    const { chatId } = req.body;
-    const messages = messageService.getMessages(chatId);
-
-    res.json(messages);
+  messageService.subscribe(({ chatId, messages }) => {
+    if (subscribers[chatId]) {
+      subscribers[chatId].forEach((client) => {
+        client.write(`data: ${JSON.stringify(messages)}\n\n`);
+      });
+    }
   });
 
   /**
@@ -120,8 +91,9 @@ export function createMessageController(app) {
    *                   description: Сообщение об ошибке авторизации
    */
 
-  app.post('/api/v1/messages', authMiddleware, async (req, res) => {
-    const { chatId, author, content, timeStamp } = req.body;
+  app.post('/api/v1/:chatId/messages', authMiddleware, async (req, res) => {
+    const { author, content, timeStamp } = req.body;
+    const { chatId } = req.params;
 
     if (!chatId || !content || !author || timeStamp) {
       return res.status(400).json({ error: 'Provide all required fields' });
@@ -149,12 +121,30 @@ export function createMessageController(app) {
       }
     };
 
-    messageService.subscribe(sendUpdate)
+    messageService.subscribe(sendUpdate);
 
     req.on('close', () => {
       console.log('Connection closed');
-      messageService.unsubscribe(sendUpdate)
-    })
+      messageService.unsubscribe(sendUpdate);
+    });
+  });
+
+  app.get('/api/v1/subscribe/:chatId/messages', (res, req) => {
+    const { chatId } = req.params;
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    if (!subscribers[chatId]) {
+      subscribers[chatId] = [];
+    }
+
+    subscribers[chatId].push(res);
+
+    req.on('close', () => {
+      subscribers[chatId] = subscribers[chatId].filter((sub) => sub !== res);
+    });
   });
 
   /**

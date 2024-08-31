@@ -4,22 +4,12 @@ import EventEmitter from 'node:events';
 
 export function messageService() {
   const messagesDao = diContainer.resolve(SERVICES.messagesDao);
-  const messages = new EventEmitter();
-
-  function generateMockMessages(chatId) {
-    const messages = messagesDao.getMessages(chatId);
-    return messages;
-  }
+  const eventEmitter = new EventEmitter();
 
   async function createMessage(messageData) {
-    const message = await messagesDao.createMessage(messageData);
+    notifyAll(messageData.chatId);
 
-    return message;
-  }
-
-  async function createMessagesStream() {
-    const messages = messageService.getMessagesByChatId()
-    messages.emit('messages', )
+    return await messagesDao.createMessage(messageData);
   }
 
   async function getMessagesByChatId(chatId) {
@@ -31,35 +21,29 @@ export function messageService() {
   }
 
   async function updateMessageById(chatId, messageId, content) {
-    const updatedMessage =  await messagesDao.updateMessageById(chatId, messageId, content);
-    messages.emit('chats', updatedMessage)
+    notifyAll(chatId);
 
-    return updatedMessage
+    return await messagesDao.updateMessageById(chatId, messageId, content);
+  }
+
+  async function notifyAll(chatId) {
+    eventEmitter.emit('messages', await getMessagesByChatId(chatId));
   }
 
   async function deleteMessageById(chatId, messageId) {
-    const deletedMessage = await messagesDao.deleteMessageById(chatId, messageId);
-    messages.emit(deletedMessage)
-    
-    return deletedMessage
-  }
+    notifyAll(chatId);
 
-  function subscribe(callback){
-    messages.on('chats', callback)
-  }
-
-  function unsubscribe(callback){
-    messages.off('chats',callback)
+    return await messagesDao.deleteMessageById(chatId, messageId);
   }
 
   return {
-    getMessages: generateMockMessages,
     createMessage,
     getMessagesByChatId,
     getMessageById,
     updateMessageById,
     deleteMessageById,
-    subscribe,
-    unsubscribe
+    subscribe: (handler) => {
+      eventEmitter.on('messages', handler);
+    },
   };
 }

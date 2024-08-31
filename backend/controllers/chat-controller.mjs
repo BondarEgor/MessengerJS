@@ -4,6 +4,15 @@ import { authMiddleware } from '../middlewares/authMiddleware.mjs';
 
 export function createChatController(app) {
   const chatService = diContainer.resolve(SERVICES.chats);
+  const subscribers = {};
+
+  chatService.subscribe(({ userId, chats }) => {
+    if (subscribers[userId]) {
+      subscribers[userId].forEach((user) =>
+        user.write(`data: ${JSON.stringify(chats)}`)
+      );
+    }
+  });
 
   /**
    * @swagger
@@ -83,6 +92,12 @@ export function createChatController(app) {
 
   app.post('/api/v1/chats', authMiddleware, async (req, res) => {
     try {
+      const { name, description, type } = req.body;
+
+      if (!name || description || type) {
+        res.status(400).json({ error: 'Provide all fields' });
+      }
+
       const newChat = await chatService.createChat(req.body);
 
       if (!newChat) {
@@ -96,6 +111,24 @@ export function createChatController(app) {
       console.error(e);
       res.status(400).json({ error: e.message });
     }
+  });
+
+  app.get('/api/v1/chats/:userId/subscribe', (res, req) => {
+    const { userId } = req.params;
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    if (!subscribers[userId]) {
+      subscribers[userId] = [];
+    }
+
+    subscribers[userId].push(res);
+
+    req.on('close', () => {
+      subscribers[userId] = subscribers[userId].filter((sub) => sub !== res);
+    });
   });
 
   /**

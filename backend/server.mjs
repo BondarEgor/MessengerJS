@@ -20,10 +20,8 @@ import { createChatController } from './controllers/chat-controller.mjs';
 import { chatService } from './services/chat-service.mjs';
 import { ChatDao } from './dao/chatDao.mjs';
 import { MessagesDao } from './dao/messageDao.mjs';
-import EventEmitter from 'node:events';
 
 const app = express();
-const eventEmitter = new EventEmitter();
 // Использование CORS middleware для разрешения кросс-доменных запросов
 app.use(cors());
 app.use(bodyParser.json());
@@ -61,42 +59,6 @@ createAuthController(app);
 createMessageController(app);
 createUsersController(app);
 createChatController(app);
-
-const clients = [];
-
-app.get('api/v1/events', (req, res) => {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-
-  res.write('data: Соединение установлено\n\n');
-
-  clients.push(res);
-
-  req.on('close', () => {
-    clients = clients.filter((client) => client !== res);
-
-    res.end();
-  });
-});
-
-const broadCastEvents = (data) => {
-  clients.forEach((client) => {
-    client.res(JSON.stringify(data));
-  });
-};
-
-eventEmitter.on('chats', (chats) => {
-  broadCastEvents({ data: chats, type: 'chats' });
-});
-
-eventEmitter.on('messages', (messages) => {
-  broadCastEvents({ data: messages, type: 'messages' });
-});
-
-eventEmitter.on('users', (users) => {
-  broadCastEvents({ data: users, type: 'users' });
-});
 
 const PORT = 3000;
 app.listen(PORT, () => {

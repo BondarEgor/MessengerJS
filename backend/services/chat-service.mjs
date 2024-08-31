@@ -4,25 +4,25 @@ import EventEmitter from 'node:events';
 
 export function chatService() {
   const chatDao = diContainer.resolve(SERVICES.chatsDao);
-  const chatEvents = new EventEmitter();
+  const eventEmitter = new EventEmitter();
 
   async function createChat(chatData) {
     const newChat = await chatDao.createChat(chatData);
-    chatEvents.emit('newChat', newChat);
+    notifyAll();
 
     return newChat;
   }
 
   async function deleteChat(chatId) {
     const deletedChat = await chatDao.deleteChatById(chatId);
-    chatEvents.emit('deleteChat', deletedChat);
+    notifyAll();
 
     return deletedChat;
   }
 
   async function updateChat(id, updateData) {
     const updatedChat = await chatDao.updateChat(id, updateData);
-    chatEvents.emit('updateChat', updatedChat);
+    notifyAll();
 
     return updatedChat;
   }
@@ -35,14 +35,8 @@ export function chatService() {
     return await chatDao.getAllChats();
   }
 
-  function subscribeToChatEvents(listener) {
-    chatEvents.on('newChat', listener);
-    chatEvents.on('deleteChat', listener);
-    chatEvents.on('updateChat', listener);
-  }
-
-  function unsubscribeFromChatEvents() {
-    chatEvents.removeAllListeners()
+  async function notifyAll() {
+    eventEmitter.emit('chats', await getAllChats());
   }
 
   return {
@@ -50,8 +44,8 @@ export function chatService() {
     deleteChat,
     updateChat,
     getChatById,
-    getAllChats,
-    subscribeToChatEvents,
-    unsubscribeFromChatEvents,
+    subscribe: (handler) => {
+      eventEmitter.on('chats', handler);
+    },
   };
 }

@@ -1,77 +1,74 @@
-import {addListeners, removeListeners, select} from '../../utils/utils.js';
-import {diContainer} from '../../di/di.js';
-import {SERVICES} from '../../di/api.js';
-import {createTemplate} from './chat-component.template.js';
+import { addListeners, removeListeners, select } from "../../utils/utils.js";
+import { diContainer } from "../../di/di.js";
+import { SERVICES } from "../../di/api.js";
+import { createTemplate } from "./chat-component.template.js";
 
 const ChatAttributes = {
-    TEST_ATTRIBUTE: "test-text",
+  TEST_ATTRIBUTE: "test-text",
 };
 export class ChatComponent extends HTMLElement {
+  #messageService = diContainer.resolve(SERVICES.messages);
+  static get name() {
+    return "chat-component";
+  }
 
-    #messageService = diContainer.resolve(SERVICES.messages);
-    static get name() {
-        return "chat-component";
-    }
+  #listeners = [
+    [select.bind(this, ".chat"), "click", this.#addEventListeners.bind(this)],
+  ];
 
-    #listeners = [
+  #ATTRIBUTE_MAPPING = new Map([
+    [ChatAttributes.TEST_ATTRIBUTE, this.#setText],
+  ]);
 
-        [select.bind(this, ".chat"), "click", this.#addEventListeners.bind(this)],
-    ];
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    #ATTRIBUTE_MAPPING = new Map([
-        [ChatAttributes.TEST_ATTRIBUTE, this.#setText],
+  static get observedAttributes() {
+    return Object.values(ChatAttributes);
+  }
+
+  connectedCallback() {
+    this.#render([
+      { message: "qwe", id: 1, author: "123" },
+      { message: "qwe", id: 1, author: "123" },
+      { message: "qwe", id: 1, author: "123" },
     ]);
 
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
+    this.#listeners.forEach(addListeners.bind(this));
+
+    for (let attrName of this.constructor.observedAttributes) {
+      if (this.hasAttribute(attrName)) {
+        const attrValue = this.getAttribute(attrName);
+        this.attributeChangedCallback(attrName, null, attrValue);
+      }
     }
+  }
 
-    static get observedAttributes() {
-        return Object.values(ChatAttributes);
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (newValue !== oldValue) {
+      const callback = this.#ATTRIBUTE_MAPPING.get(name);
+      callback(newValue);
     }
+  }
 
-    connectedCallback() {
-        this.#render([
-            {message: 'qwe', id: 1, author: '123'},
-            {message: 'qwe', id: 1, author: '123'},
-            {message: 'qwe', id: 1, author: '123'},
-        ])
+  #setText(newText) {
+    console.log(newText);
+  }
 
-        this.#listeners.forEach(addListeners.bind(this));
+  #addEventListeners(event) {
+    console.log("Emitted event: ", event);
+  }
 
-        for (let attrName of this.constructor.observedAttributes) {
-            if (this.hasAttribute(attrName)) {
-                const attrValue = this.getAttribute(attrName);
-                this.attributeChangedCallback(attrName, null, attrValue);
-            }
-        }
-    }
+  disconnectedCallback() {
+    this.#listeners.forEach(removeListeners);
+  }
 
-    attributeChangedCallback(name, oldValue, newValue) {
-        if (newValue !== oldValue) {
-            const callback = this.#ATTRIBUTE_MAPPING.get(name);
-            callback(newValue);
-        }
-    }
+  #render(messages) {
+    const templateElem = document.createElement("template");
+    templateElem.innerHTML = createTemplate(messages);
 
-    #setText(newText) {
-        console.log(newText)
-    }
-
-
-    #addEventListeners(event) {
-        console.log('Emitted event: ', event);
-    }
-
-    disconnectedCallback() {
-        this.#listeners.forEach(removeListeners);
-    }
-
-    #render(messages) {
-        const templateElem = document.createElement("template");
-        templateElem.innerHTML = createTemplate(messages);
-
-        this.shadowRoot.appendChild(templateElem.content.cloneNode(true));
-    }
+    this.shadowRoot.appendChild(templateElem.content.cloneNode(true));
+  }
 }

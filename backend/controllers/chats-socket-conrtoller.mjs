@@ -50,9 +50,9 @@ export function getChatsSocketController(socket) {
     socket.emit(chats);
   });
 
-  socket.on('deleteChat' ,(id) => {
+  socket.on('deleteChat', (id) => {
     // Тут наверное я должен сначала удалить чат, потом проверить, если успешно, то на клиент сэмитить по сокету обновленный список чатов?
-  })
+  });
 
   const handleCreateChat = (chat) => {
     socket.emit('createChat', chat);

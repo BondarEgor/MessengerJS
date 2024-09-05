@@ -1,4 +1,5 @@
 export const SERVICES = {
-    messages: 'messageService',
-    http: 'httpService',
-}
+  messages: "messageService",
+  http: "httpService",
+  login: "loginService",
+};

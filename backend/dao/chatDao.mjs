@@ -10,18 +10,16 @@ const _dirname = path.dirname(_filename);
 export class ChatDao {
   #filePath = path.join(_dirname, '../data', PATHS.chats);
 
-  async createChat(chatData) {
-    const chats = await this.#readChats();
+  async createChat(userId, chatData) {
     const { name } = chatData;
-    const isChatCreated = this.doesChatExist(chats, name);
+    const isChatCreated = await this.doesChatExist(name, userId);
 
     if (isChatCreated) {
       throw new Error('Chat already exists');
     }
 
-    const uniqueId = uuid();
-
-    chats[uniqueId] = chatData;
+    const chatId = uuid()
+    chats[userId][chatId] = chatData;
 
     return await this.#writeChats(chats);
   }
@@ -50,24 +48,26 @@ export class ChatDao {
     }
   }
 
-  doesChatExist(chats, chatName) {
-    return !!Object.values(chats).some((chat) => chat.name === chatName);
+  async doesChatExist(chatName, userId) {
+    const chats = await this.#readChats()
+
+    return !!Object.values(chats[userId]).some((chat) => chat.name === chatName);
   }
 
-  async deleteChatById(chatId) {
+  async deleteChatById(userId, chatId) {
     const chats = await this.#readChats();
-    const isChatPresent = !!chats[chatId];
+    const isChatPresent = !!chats[userId][chatId];
 
     if (!isChatPresent) {
       throw new Error('Chat not found');
     }
 
-    delete chats[chatId];
+    delete chats[userId][chatId];
 
     return await this.#writeChats(chats);
   }
 
-  async updateChat(chatId, updateData) {
+  async updateChat(userId, chatId, updateData) {
     const chats = await this.#readChats();
     const isChatPresent = !!chats[chatId];
 
@@ -83,7 +83,7 @@ export class ChatDao {
     return await this.#writeChats(chats);
   }
 
-  async ChatById(chatId) {
+  async chatById(chatId) {
     const chats = await this.#readChats();
     const isChatPresent = !!chats[chatId];
 

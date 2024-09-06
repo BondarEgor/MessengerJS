@@ -4,19 +4,10 @@ import { authMiddleware } from '../middlewares/authMiddleware.mjs';
 
 export function createMessageController(app) {
   const messageService = diContainer.resolve(SERVICES.messages);
-  const subscribers = {};
-
-  messageService.subscribe(({ chatId, messages }) => {
-    if (subscribers[chatId]) {
-      subscribers[chatId].forEach((client) => {
-        client.write(`data: ${JSON.stringify(messages)}\n\n`);
-      });
-    }
-  });
 
   /**
    * @swagger
-   * /api/v1/messages:
+   * /api/v1/:chatId/messages:
    *   post:
    *     summary: Создание нового сообщения
    *     description: Создает новое сообщение в указанном чате. Требует авторизацию.
@@ -91,7 +82,7 @@ export function createMessageController(app) {
    *                   description: Сообщение об ошибке авторизации
    */
 
-  app.post('/api/v1/:chatId/messages', authMiddleware, async (req, res) => {
+  app.post('/api/v1/:chatId/message', authMiddleware, async (req, res) => {
     const { author, content, timeStamp } = req.body;
     const { chatId } = req.params;
 
@@ -102,48 +93,21 @@ export function createMessageController(app) {
     const newMessage = await messageService.createMessage(req.body);
     res.status(201).json(newMessage);
 
-    req.on('close', () => {});
+    req.on('close', () => { });
   });
 
-  app.post('/api/v1/messages-stream', authMiddleware, async (req, res) => {
+  app.get('/api/v1/:chatId/messages', authMiddleware, async (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    const sendUpdate = async () => {
-      const { chatId } = req.body;
-      try {
-        const messages = await getMessagesByChatId(chatId);
-        res.write(JSON.stringify(messages));
-      } catch (error) {
-        console.error(error);
-        res.status(400).json({ error: error.message });
-      }
-    };
+    const { chatId } = req.params
 
-    messageService.subscribe(sendUpdate);
+    messageService.createMessageStream(res, chatId);
 
     req.on('close', () => {
       console.log('Connection closed');
-      messageService.unsubscribe(sendUpdate);
-    });
-  });
-
-  app.get('/api/v1/subscribe/:chatId/messages', (res, req) => {
-    const { chatId } = req.params;
-
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-
-    if (!subscribers[chatId]) {
-      subscribers[chatId] = [];
-    }
-
-    subscribers[chatId].push(res);
-
-    req.on('close', () => {
-      subscribers[chatId] = subscribers[chatId].filter((sub) => sub !== res);
+      messageService.unsubscribe(chatId, res);
     });
   });
 
@@ -324,7 +288,7 @@ export function createMessageController(app) {
     }
   );
 
-  app.put('/api/v1/:chatId/messages/:messageId', (req, res) => {});
+  app.put('/api/v1/:chatId/messages/:messageId', (req, res) => { });
   /**
    * @swagger
    * /api/v1/{chatId}/messages/{messageId}:

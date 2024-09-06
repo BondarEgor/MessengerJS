@@ -4,15 +4,6 @@ import { authMiddleware } from '../middlewares/authMiddleware.mjs';
 
 export function createChatController(app) {
   const chatService = diContainer.resolve(SERVICES.chats);
-  const subscribers = {};
-
-  chatService.subscribe(({ userId, chats }) => {
-    if (subscribers[userId]) {
-      subscribers[userId].forEach((user) =>
-        user.write(`data: ${JSON.stringify(chats)}`)
-      );
-    }
-  });
 
   /**
    * @swagger
@@ -90,15 +81,15 @@ export function createChatController(app) {
    *         description: Internal server error
    */
 
-  app.post('/api/v1/chats', authMiddleware, async (req, res) => {
+  app.post('/api/v1/:userId/chats', authMiddleware, async (req, res) => {
     try {
       const { name, description, type } = req.body;
-
+      const { userId } = req.params
       if (!name || description || type) {
         res.status(400).json({ error: 'Provide all fields' });
       }
 
-      const newChat = await chatService.createChat(req.body);
+      const newChat = await chatService.createChat(userId. req.body);
 
       if (!newChat) {
         res.status(400).json({ error: 'Error while creating chat' });
@@ -113,21 +104,17 @@ export function createChatController(app) {
     }
   });
 
-  app.get('/api/v1/chats/:userId/subscribe', (res, req) => {
-    const { userId } = req.params;
-
+  app.get('/api/v1/:userId/chats/', (res, req) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    if (!subscribers[userId]) {
-      subscribers[userId] = [];
-    }
+    const { userId } = req.params;
 
-    subscribers[userId].push(res);
+    chatService.createChatStream(userId, res)
 
     req.on('close', () => {
-      subscribers[userId] = subscribers[userId].filter((sub) => sub !== res);
+      chatService.unsubscribe(userId, res);
     });
   });
 
@@ -202,10 +189,10 @@ export function createChatController(app) {
    *                   example: "Internal server error"
    */
 
-  app.delete('/api/v1/chats/:id', authMiddleware, async (req, res) => {
+  app.delete('/api/v1/:userId/chats/', authMiddleware, async (req, res) => {
     try {
-      const { id } = req.params;
-      const deletedChat = await chatService.deleteChat(id);
+      const { userId } = req.params;
+      const deletedChat = await chatService.deleteChat(userId);
 
       res.status(200).json(deletedChat);
     } catch (e) {
@@ -291,10 +278,10 @@ export function createChatController(app) {
    *         description: Internal server error
    */
 
-  app.put('/api/v1/chats/:id', authMiddleware, async (req, res) => {
+  app.put('/api/v1/:userId/chats/:chatId', authMiddleware, async (req, res) => {
     try {
-      const { id } = req.params;
-      const updatedChat = await chatService.updateChat(id, req.body);
+      const { userId, chatId } = req.params;
+      const updatedChat = await chatService.updateChat(userId, chatId, req.body);
 
       res.status(200).json({ updatedChat });
     } catch (e) {
@@ -358,29 +345,15 @@ export function createChatController(app) {
    *         description: Internal server error
    */
 
-  app.get('/api/v1/chats/:id', authMiddleware, async (req, res) => {
+  app.get('/api/v1/:userId/chats/:chatId', authMiddleware, async (req, res) => {
     try {
-      const { id } = req.params;
-      const chatById = await chatService.getChatById(id);
+      const { chatId } = req.params;
+      const chatById = await chatService.getChatById(chatId);
 
       res.status(200).json(chatById);
     } catch (e) {
       console.error(e);
       res.status(400).json({ error: e.message });
     }
-  });
-
-  app.get('/api/v1/chats', authMiddleware, async (req, res) => {
-    //Проставляем заголовки для настройки беспрерывного соединения
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-
-    chatService.subscribeToChatEvents(sendEvent);
-
-    req.on('close', () => {
-      chatService.unsubscribeFromChatEvents();
-      res.end();
-    });
   });
 }

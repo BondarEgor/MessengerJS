@@ -84,12 +84,12 @@ export function createChatController(app) {
   app.post('/api/v1/:userId/chats', authMiddleware, async (req, res) => {
     try {
       const { name, description, type } = req.body;
-      const { userId } = req.params
+      const { userId } = req.params;
       if (!name || description || type) {
         res.status(400).json({ error: 'Provide all fields' });
       }
 
-      const newChat = await chatService.createChat(userId. req.body);
+      const newChat = await chatService.createChat(userId.req.body);
 
       if (!newChat) {
         res.status(400).json({ error: 'Error while creating chat' });
@@ -111,7 +111,7 @@ export function createChatController(app) {
 
     const { userId } = req.params;
 
-    chatService.createChatStream(userId, res)
+    chatService.createChatStream(userId, res);
 
     req.on('close', () => {
       chatService.unsubscribe(userId, res);
@@ -189,10 +189,10 @@ export function createChatController(app) {
    *                   example: "Internal server error"
    */
 
-  app.delete('/api/v1/:userId/chats/', authMiddleware, async (req, res) => {
+  app.delete('/api/v1/:userId/chats/:chatId', authMiddleware, async (req, res) => {
     try {
-      const { userId } = req.params;
-      const deletedChat = await chatService.deleteChat(userId);
+      const { userId, chatId } = req.params;
+      const deletedChat = await chatService.deleteChat(userId, chatId);
 
       res.status(200).json(deletedChat);
     } catch (e) {
@@ -281,7 +281,11 @@ export function createChatController(app) {
   app.put('/api/v1/:userId/chats/:chatId', authMiddleware, async (req, res) => {
     try {
       const { userId, chatId } = req.params;
-      const updatedChat = await chatService.updateChat(userId, chatId, req.body);
+      const updatedChat = await chatService.updateChat(
+        userId,
+        chatId,
+        req.body
+      );
 
       res.status(200).json({ updatedChat });
     } catch (e) {
@@ -347,8 +351,8 @@ export function createChatController(app) {
 
   app.get('/api/v1/:userId/chats/:chatId', authMiddleware, async (req, res) => {
     try {
-      const { chatId } = req.params;
-      const chatById = await chatService.getChatById(chatId);
+      const { userId, chatId } = req.params;
+      const chatById = await chatService.getChatById(userId, chatId);
 
       res.status(200).json(chatById);
     } catch (e) {

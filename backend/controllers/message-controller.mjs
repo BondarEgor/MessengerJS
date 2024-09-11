@@ -93,7 +93,7 @@ export function createMessageController(app) {
     const newMessage = await messageService.createMessage(req.body);
     res.status(201).json(newMessage);
 
-    req.on('close', () => { });
+    req.on('close', () => {});
   });
 
   app.get('/api/v1/:chatId/messages', authMiddleware, async (req, res) => {
@@ -101,7 +101,7 @@ export function createMessageController(app) {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    const { chatId } = req.params
+    const { chatId } = req.params;
 
     messageService.createMessageStream(res, chatId);
 
@@ -288,7 +288,7 @@ export function createMessageController(app) {
     }
   );
 
-  app.put('/api/v1/:chatId/messages/:messageId', (req, res) => { });
+  app.put('/api/v1/:chatId/messages/:messageId', (req, res) => {});
   /**
    * @swagger
    * /api/v1/{chatId}/messages/{messageId}:

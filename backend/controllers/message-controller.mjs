@@ -92,8 +92,6 @@ export function createMessageController(app) {
 
     const newMessage = await messageService.createMessage(req.body);
     res.status(201).json(newMessage);
-
-    req.on('close', () => {});
   });
 
   app.get('/api/v1/:chatId/messages', authMiddleware, async (req, res) => {

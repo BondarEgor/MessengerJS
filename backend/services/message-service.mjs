@@ -11,19 +11,20 @@ export class MessageService {
 
   async createMessage(messageData) {
     const { chatId } = messageData;
-    notifyAll(chatId);
+    const newMessage = await this.messagesDao.createMessage(messageData);
+    this.notifyAll(chatId, newMessage);
 
-    return await messagesDao.createMessage(messageData);
+    return newMessage;
   }
 
   createMessageStream(chatId, sub) {
     if (!subscribers[chatId]) {
-      subscribers[chatId] = [];
+      subscribers[chatId] = new Set();
     }
 
-    subscribers[chatId].push(sub);
+    subscribers[chatId].add(sub);
 
-    eventEmitter.on(`${chatId}`, (messages) => {
+    eventEmitter.on(chatId, (messages) => {
       subscribers[chatId].forEach((sub) => {
         sub.write(`data: ${JSON.stringify(messages)}`);
       });
@@ -39,19 +40,28 @@ export class MessageService {
   }
 
   async updateMessageById(chatId, messageId, content) {
-    notifyAll(chatId);
+    const updatedMessage = await messagesDao.updateMessageById(
+      chatId,
+      messageId,
+      content
+    );
+    this.notifyAll(chatId, updatedMessage);
 
-    return await messagesDao.updateMessageById(chatId, messageId, content);
+    return updatedMessage;
   }
 
-  async notifyAll(chatId) {
-    eventEmitter.emit(`${chatId}`, await getMessagesByChatId(chatId));
+  async notifyAll(chatId, data) {
+    eventEmitter.emit(chatId, data);
   }
 
   async deleteMessageById(chatId, messageId) {
-    notifyAll(chatId);
+    const deletedMessage = await messagesDao.deleteMessageById(
+      chatId,
+      messageId
+    );
+    this.notifyAll(chatId, deletedMessage);
 
-    return await messagesDao.deleteMessageById(chatId, messageId);
+    return deletedMessage;
   }
 
   unsubscribe(chatId, res) {
@@ -59,7 +69,7 @@ export class MessageService {
       return;
     }
 
-    subscribers[chatId] = subscribers[chatId].filter((sub) => sub !== res);
+    subscribers[chatId] = subscribers[chatId].delete(res);
 
     if (subscribers[chatId].length === 0) {
       delete subscribers[chatId];

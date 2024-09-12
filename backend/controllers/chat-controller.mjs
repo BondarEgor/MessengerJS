@@ -189,17 +189,28 @@ export function createChatController(app) {
    *                   example: "Internal server error"
    */
 
-  app.delete('/api/v1/:userId/chats/:chatId', authMiddleware, async (req, res) => {
-    try {
-      const { userId, chatId } = req.params;
-      const deletedChat = await chatService.deleteChat(userId, chatId);
+  app.delete(
+    '/api/v1/:userId/chats/:chatId',
+    authMiddleware,
+    async (req, res) => {
+      try {
+        const { userId, chatId } = req.params;
+        const isChatDeleteAllowed = await this.chatService.isDeleteAllowed(
+          userId,
+          chatId
+        );
 
-      res.status(200).json(deletedChat);
-    } catch (e) {
-      console.error(e);
-      res.status(400).json({ error: e.message });
+        if (isChatDeleteAllowed) {
+          const deletedChat = await chatService.deleteChat(userId, chatId);
+
+          res.status(200).json(deletedChat);
+        }
+      } catch (e) {
+        console.error(e);
+        res.status(400).json({ error: e.message });
+      }
     }
-  });
+  );
 
   /**
    * @swagger

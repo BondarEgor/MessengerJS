@@ -12,12 +12,14 @@ export class ChatDao {
 
   async createChat(userId, chatData) {
     const { name } = chatData;
-    const isChatPresent = Object.values(chats).some(chat => chat.name === name);
+    const isChatPresent = Object.values(chats).some(
+      (chat) => chat.name === name
+    );
 
     if (isChatPresent) {
       throw new Error('Chat already exists');
     }
-    const chats = await this.#readChats()
+    const chats = await this.#readChats();
 
     const chatId = uuid();
     chats[userId][chatId] = chatData;
@@ -49,38 +51,46 @@ export class ChatDao {
     }
   }
 
-  async #doesChatExist(userId, id) {
+  async #doesChatExist(userId, chatId) {
     const chats = await this.#readChats();
-    const isUserPresent = userId in chats
+    const isUserPresent = userId in chats;
 
     if (!isUserPresent) {
-      return false
+      throw new Error('No user found');
     }
 
-    return !!Object.values(chats[userId]).some(
-      ({ chatId }) => chatId === id
-    );
+    const isChatPresent = chatId in chats[userId];
+
+    if (!isChatPresent) {
+      throw new Error('No chat found');
+    }
+
+    return true;
   }
 
+  async isDeleteAllowed(userId, chatId) {
+    const isChatPresent = await this.#doesChatExist(userId, chatId);
+
+    if (!isChatPresent) {
+      throw new Error('Delete not allowed');
+    }
+
+    return true;
+  }
 
   async deleteChatById(userId, chatId) {
     const chats = await this.#readChats();
-    const isChatPresent = await this.#doesChatExist(userId, chatId);
 
-    if (isChatPresent) {
-      throw new Error('Chat not found');
-    }
-
-    const updatedChats = { ...chats }
+    const updatedChats = { ...chats };
     delete updatedChats[userId][chatId];
 
-    return updatedChats
+    return updatedChats;
   }
 
   async updateChat(userId, chatId, updateData) {
     try {
       const chats = await this.#readChats();
-      const isChatPresent = await this.#doesChatExist(userId, chatId)
+      const isChatPresent = await this.#doesChatExist(userId, chatId);
 
       if (isChatPresent) {
         chats[chatId] = {
@@ -98,7 +108,7 @@ export class ChatDao {
 
   async getChatById(userId, chatId) {
     const chats = await this.#readChats();
-    const isChatPresent = await this.#doesChatExist(userId, chatId)
+    const isChatPresent = await this.#doesChatExist(userId, chatId);
 
     if (!isChatPresent) {
       throw new Error('Chat not found');

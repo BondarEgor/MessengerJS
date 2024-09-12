@@ -23,11 +23,15 @@ export class ChatService {
 
     this.subscribers[userId].add(res);
 
-    this.eventEmitter.on(`${userId}`, (chats) => {
+    this.eventEmitter.on(userId, (chats) => {
       subscribers[userId].forEach((sub) => {
         sub.write(chats);
       });
     });
+  }
+
+  async isDeleteAllowed(userId, chatId) {
+    await this.chatDao.isDeleteAllowed(userId, chatId);
   }
 
   async deleteChat(userId, chatId) {
@@ -57,17 +61,19 @@ export class ChatService {
   }
 
   async notifyAll(userId, data) {
-    this.eventEmitter.emit(`${userId}`, data);
+    this.eventEmitter.emit(userId, data);
   }
 
   unsubscribe(userId, res) {
+    const isSubscribersEmpty = this.subscribers[userId].length === 0;
+
     if (!this.subscribers[userId]) {
       return;
     }
-    this.subscribers[userId] = this.subscribers[userId].delete(res)
+    this.subscribers[userId] = this.subscribers[userId].delete(res);
 
-    if (this.subscribers[userId].length === 0) {
-      this.eventEmitter.removeAllListeners(`${userId}`);
+    if (isSubscribersEmpty) {
+      this.eventEmitter.removeAllListeners(userId);
 
       delete this.subscribers[userId];
     }

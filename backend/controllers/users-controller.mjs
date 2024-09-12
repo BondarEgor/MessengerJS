@@ -129,7 +129,6 @@ export function createUsersController(app) {
 
       res.status(200).json(updatedUserInfo);
     } catch (e) {
-      console.error(e);
       console.error(`Faced error updating user: ${e}`);
       res.status(500).json({ message: e.message });
     }

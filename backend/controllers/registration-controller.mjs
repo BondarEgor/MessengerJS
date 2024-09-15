@@ -50,8 +50,13 @@ export function createRegistrationController(app) {
 
   app.post('/api/v1/registration', async (req, res) => {
     try {
-      const isSuccess = await registrationService.registerNewUser(req.body);
+      const { username, password, email, avatar } = req.body;
 
+      if (!username || !password || !email || !avatar) {
+        throw new Error('Provide all the fields');
+      }
+
+      const isSuccess = await registrationService.registerNewUser(req.body);
       if (isSuccess) {
         res.status(201).json({ message: 'User registererd successfully' });
       } else {

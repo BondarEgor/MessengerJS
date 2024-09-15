@@ -9,8 +9,8 @@ export class ChatService {
     this.subscribers = {};
   }
 
-  async createChat(chatData, userId) {
-    const newChat = await this.chatDao.createChat(chatData);
+  async createChat(userId, chatData) {
+    const newChat = await this.chatDao.createChat(userId, chatData);
     this.notifyAll(userId, newChat);
 
     return newChat;
@@ -31,7 +31,7 @@ export class ChatService {
   }
 
   async isDeleteAllowed(userId, chatId) {
-    await this.chatDao.isDeleteAllowed(userId, chatId);
+    return await this.chatDao.isDeleteAllowed(userId, chatId);
   }
 
   async deleteChat(userId, chatId) {
@@ -39,6 +39,10 @@ export class ChatService {
     this.notifyAll(userId, deletedChat);
 
     return deletedChat;
+  }
+
+  async restoreChat(userId, chatId) {
+    return await this.chatDao.restoreChatById(userId, chatId);
   }
 
   async updateChat(userId, chatId, updateData) {

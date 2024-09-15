@@ -1,6 +1,4 @@
 import "./style.css";
-import javascriptLogo from "./javascript.svg";
-import viteLogo from "/vite.svg";
 import { diContainer } from "./chat-app/di/di.js";
 import { SERVICES } from "./chat-app/di/api.js";
 import { messageService } from "./chat-app/services/messageService.js";
@@ -16,12 +14,6 @@ diContainer.register(SERVICES.http, httpService);
 
 document.querySelector("#app").innerHTML = `
   <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
     <h1>Hello Vite!</h1>
     <chat-component test-text="test"></chat-component>
     <p class="read-the-docs">

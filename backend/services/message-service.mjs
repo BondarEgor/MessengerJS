@@ -9,9 +9,11 @@ export class MessageService {
     this.subscribers = {};
   }
 
-  async createMessage(messageData) {
-    const { chatId } = messageData;
-    const newMessage = await this.messagesDao.createMessage(messageData);
+  async createMessage(chatId, messageData) {
+    const newMessage = await this.messagesDao.createMessage(
+      chatId,
+      messageData
+    );
     this.notifyAll(chatId, newMessage);
 
     return newMessage;
@@ -24,7 +26,7 @@ export class MessageService {
 
     subscribers[chatId].add(sub);
 
-    eventEmitter.on(chatId, (messages) => {
+    this.eventEmitter.on(chatId, (messages) => {
       subscribers[chatId].forEach((sub) => {
         sub.write(`data: ${JSON.stringify(messages)}`);
       });
@@ -51,14 +53,15 @@ export class MessageService {
   }
 
   async notifyAll(chatId, data) {
-    eventEmitter.emit(chatId, data);
+    this.eventEmitter.emit(chatId, data);
   }
 
   async deleteMessageById(chatId, messageId) {
-    const deletedMessage = await messagesDao.deleteMessageById(
+    const deletedMessage = await this.messagesDao.deleteMessageById(
       chatId,
       messageId
     );
+
     this.notifyAll(chatId, deletedMessage);
 
     return deletedMessage;

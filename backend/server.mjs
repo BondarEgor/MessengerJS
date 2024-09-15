@@ -20,12 +20,15 @@ import { createChatController } from './controllers/chat-controller.mjs';
 import { ChatService } from './services/chat-service.mjs';
 import { ChatDao } from './dao/chatDao.mjs';
 import { MessagesDao } from './dao/messageDao.mjs';
+import dotenv from 'dotenv'
+
+//Загружаем переменные окружения
+dotenv.config()
 
 const app = express();
 // Использование CORS middleware для разрешения кросс-доменных запросов
 app.use(cors());
 app.use(bodyParser.json());
-
 // Загрузка документации Swagger
 const swaggerOptions = {
   swaggerDefinition: {
@@ -56,9 +59,9 @@ diContainer.register(SERVICES.users, new UsersService());
 createRegistrationController(app);
 createAuthController(app);
 
-createMessageController(app);
 createUsersController(app);
 createChatController(app);
+createMessageController(app);
 
 const PORT = 3000;
 app.listen(PORT, () => {

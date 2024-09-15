@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { PATHS } from '../constants.js';
 import { v4 as uuid } from 'uuid';
+import { ChatsDto } from '../dto/chatsDto.mjs';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
@@ -11,18 +12,26 @@ export class ChatDao {
   #filePath = path.join(_dirname, '../data', PATHS.chats);
 
   async createChat(userId, chatData) {
-    const { name } = chatData;
-    const isChatPresent = Object.values(chats).some(
-      (chat) => chat.name === name
-    );
-
-    if (isChatPresent) {
-      throw new Error('Chat already exists');
-    }
     const chats = await this.#readChats();
+    const { name } = chatData;
+
+    if (chats[userId]) {
+      const isChatPresent = Object.values(chats[userId]).some(
+        (chat) => name === chat.name
+      );
+
+      if (isChatPresent) {
+        throw new Error('Chat already exists');
+      }
+    }
 
     const chatId = uuid();
-    chats[userId][chatId] = chatData;
+    chats[userId] = {
+      ...chats[userId],
+      [chatId]: {
+        ...chatData,
+      },
+    };
 
     return await this.#writeChats(chats);
   }
@@ -31,11 +40,13 @@ export class ChatDao {
     try {
       const data = await fs.readFile(this.#filePath, 'utf-8');
       return JSON.parse(data);
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      const directoryPath = path.dirname(this.#filePath);
+
+      await fs.mkdir(directoryPath, { recursive: true });
       await fs.writeFile(this.#filePath, JSON.stringify({}));
 
-      throw e;
+      throw error;
     }
   }
 
@@ -51,7 +62,7 @@ export class ChatDao {
     }
   }
 
-  async #doesChatExist(userId, chatId) {
+  async #doesChatExist(userId, id) {
     const chats = await this.#readChats();
     const isUserPresent = userId in chats;
 
@@ -59,7 +70,9 @@ export class ChatDao {
       throw new Error('No user found');
     }
 
-    const isChatPresent = chatId in chats[userId];
+    const isChatPresent = Object.keys(chats[userId]).find(
+      (chatId) => chatId == id
+    );
 
     if (!isChatPresent) {
       throw new Error('No chat found');
@@ -69,27 +82,54 @@ export class ChatDao {
   }
 
   async isDeleteAllowed(userId, chatId) {
-    const isChatPresent = await this.#doesChatExist(userId, chatId);
+    try {
+      const isChatPresent = await this.#doesChatExist(userId, chatId);
 
-    if (!isChatPresent) {
-      throw new Error('Delete not allowed');
+      if (!isChatPresent) {
+        throw new Error('Delete not allowed');
+      }
+
+      return true;
+    } catch (error) {
+      throw error;
     }
-
-    return true;
   }
 
   async deleteChatById(userId, chatId) {
     const chats = await this.#readChats();
 
-    const updatedChats = { ...chats };
-    delete updatedChats[userId][chatId];
+    if ((!userId in chats)) {
+      throw new Error(`No user with id ${userId} found`)
+    }
 
-    return updatedChats;
+    if ((!chatId in chats[userId])) {
+      throw new Error(`No chat with id ${chatId} found`)
+    }
+
+    const currChat = chats[userId][chatId]
+
+    return new ChatsDto(currChat, true)
+  }
+
+  async restoreChatById(userId, chatId) {
+    const chats = await this.#readChats();
+    const isChatPresent = await this.#doesChatExist(userId, chatId);
+
+    if (isChatPresent) {
+      let currentChat = chats[userId][chatId];
+
+      chats[userId][chatId] = currentChat;
+    }
+
+    await this.#writeChats(chats);
+
+    return chats[userId][chatId];
   }
 
   async updateChat(userId, chatId, updateData) {
+    const chats = await this.#readChats();
+
     try {
-      const chats = await this.#readChats();
       const isChatPresent = await this.#doesChatExist(userId, chatId);
 
       if (isChatPresent) {

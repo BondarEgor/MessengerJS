@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { PATHS } from '../constants.js';
+import jwt from 'jsonwebtoken'
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
@@ -14,9 +15,13 @@ export class SessionDao {
       const data = await fs.readFile(this.#filePath, 'utf-8');
 
       return JSON.parse(data);
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      const directoryPath = path.dirname(this.#filePath);
+
+      await fs.mkdir(directoryPath, { recursive: true });
       await fs.writeFile(this.#filePath, JSON.stringify({}));
+
+      throw error;
     }
   }
 
@@ -27,16 +32,23 @@ export class SessionDao {
   }
 
   async isTokenValid(token) {
-    const sessions = await this.#readSessions();
-    const isSessionValid = Object.values(sessions).some((session) => {
-      return session.authToken === token && session.expireDate > Date.now();
-    });
+    try {
+      const valid = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (!isSessionValid) {
-      throw new Error('Session not valid');
+      return valid
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        const { userId } = jwt.decode(token)
+        const { refreshToken } = await this.getSessionByUserId(userId)
+
+        //TODO: тут нужно добавить логику валидации самого рефреша
+        if (!refreshToken) {
+          throw new Error('Refresh token not found, please log in')
+        }
+
+        return await this.updateSession(token)
+      }
     }
-
-    return isSessionValid;
   }
 
   async createSession(sessionData) {
@@ -58,18 +70,44 @@ export class SessionDao {
     }
   }
 
-  async updateSession(userId, updatedSessionInfo) {
+  async updateSession(token) {
     const sessions = await this.#readSessions();
+    const { userId, username } = jwt.decode(token)
 
-    sessions[userId] = updatedSessionInfo;
+    if (!(userId in sessions)) {
+      throw new Error('User not registered')
+    }
+
+    const newToken = jwt.sign({
+      userId,
+      username,
+    }, process.env.JWT_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXP })
+
+    const refreshToken = jwt.sign({ token }, process.env.JWT_SECRET, { expiresIn: process.env.REFRESH_TOKEN_EXP })
+
+    sessions[userId] = {
+      ...sessions[userId],
+      token: newToken,
+      refreshToken
+    }
 
     await this.#writeSessions(sessions);
+
+    return {
+      token: newToken,
+      refreshToken
+    }
   }
 
   async getSessionByUserId(userId) {
     const sessions = await this.#readSessions();
+    const isSessionExist = userId in sessions;
 
-    return sessions[userId];
+    if (!isSessionExist) {
+      return false
+    }
+
+    return sessions[userId]
   }
 
   async deleteSessionById(userId) {

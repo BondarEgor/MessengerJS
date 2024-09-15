@@ -1,6 +1,7 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 import { authMiddleware } from '../middlewares/authMiddleware.mjs';
+import jwt from 'jsonwebtoken'
 
 export function createChatController(app) {
   const chatService = diContainer.resolve(SERVICES.chats);
@@ -81,15 +82,18 @@ export function createChatController(app) {
    *         description: Internal server error
    */
 
-  app.post('/api/v1/:userId/chats', authMiddleware, async (req, res) => {
+  app.post('/api/v1/chats', authMiddleware, async (req, res) => {
     try {
       const { name, description, type } = req.body;
-      const { userId } = req.params;
-      if (!name || description || type) {
+      const { userId } = jwt.decode(req.headers['authorization'])
+
+      if (!name || !description || !type) {
         res.status(400).json({ error: 'Provide all fields' });
+
+        return;
       }
 
-      const newChat = await chatService.createChat(userId.req.body);
+      const newChat = await chatService.createChat(userId, req.body);
 
       if (!newChat) {
         res.status(400).json({ error: 'Error while creating chat' });
@@ -104,13 +108,12 @@ export function createChatController(app) {
     }
   });
 
-  app.get('/api/v1/:userId/chats/', (res, req) => {
+  app.get('/api/v1/chats-stream/', authMiddleware, (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    const { userId } = req.params;
-
+    const { userId } = jwt.decode(req.headers['authorization'])
     chatService.createChatStream(userId, res);
 
     req.on('close', () => {
@@ -190,12 +193,13 @@ export function createChatController(app) {
    */
 
   app.delete(
-    '/api/v1/:userId/chats/:chatId',
+    '/api/v1/chats/:chatId',
     authMiddleware,
     async (req, res) => {
       try {
-        const { userId, chatId } = req.params;
-        const isChatDeleteAllowed = await this.chatService.isDeleteAllowed(
+        const { chatId } = req.params;
+        const { userId } = req.headers['authorization']
+        const isChatDeleteAllowed = await chatService.isDeleteAllowed(
           userId,
           chatId
         );
@@ -203,11 +207,38 @@ export function createChatController(app) {
         if (isChatDeleteAllowed) {
           const deletedChat = await chatService.deleteChat(userId, chatId);
 
-          res.status(200).json(deletedChat);
+          return res.status(200).json(deletedChat);
         }
+
+        return res.status(400).json('You cant delete this chat');
       } catch (e) {
         console.error(e);
-        res.status(400).json({ error: e.message });
+
+        return res.status(400).json({ error: e.message });
+      }
+    }
+  );
+
+  app.patch(
+    '/api/v1/chats/:chatId/restore',
+    authMiddleware,
+    async (req, res) => {
+      const { chatId } = req.params;
+      const { userId } = req.headers['authorization']
+      if (!userId || !chatId) {
+        res.status(400).json({ error: 'Provide all fields' });
+      }
+
+      try {
+        const restoredChat = await chatService.restoreChat(userId, chatId);
+
+        if (restoredChat) {
+          res.status(200).json(restoredChat);
+        }
+      } catch (error) {
+        console.error(error);
+
+        res.status(400).json({ error: error.message });
       }
     }
   );
@@ -289,9 +320,10 @@ export function createChatController(app) {
    *         description: Internal server error
    */
 
-  app.put('/api/v1/:userId/chats/:chatId', authMiddleware, async (req, res) => {
+  app.put('/api/v1/chats/:chatId', authMiddleware, async (req, res) => {
     try {
-      const { userId, chatId } = req.params;
+      const { chatId } = req.params;
+      const { userId } = req.headers['authorization']
       const updatedChat = await chatService.updateChat(
         userId,
         chatId,
@@ -360,15 +392,16 @@ export function createChatController(app) {
    *         description: Internal server error
    */
 
-  app.get('/api/v1/:userId/chats/:chatId', authMiddleware, async (req, res) => {
+  app.get('/api/v1/chats/:chatId', authMiddleware, async (req, res) => {
     try {
-      const { userId, chatId } = req.params;
+      const { chatId } = req.params;
+      const { userId } = req.headers['authorization']
       const chatById = await chatService.getChatById(userId, chatId);
 
-      res.status(200).json(chatById);
+      return res.status(200).json(chatById);
     } catch (e) {
       console.error(e);
-      res.status(400).json({ error: e.message });
+      return res.status(400).json({ error: e.message });
     }
   });
 }

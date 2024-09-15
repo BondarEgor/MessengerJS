@@ -4,7 +4,6 @@ import { diContainer } from '../di/di.mjs';
 
 export function authService() {
   const registrationService = diContainer.resolve(SERVICES.registration);
-  const sessionService = diContainer.resolve(SERVICES.sessions);
 
   async function authorizeUser(username, userPassword) {
     try {
@@ -16,15 +15,12 @@ export function authService() {
 
       const isPassEqual = await isPasswordCorrect(userPassword, user.password);
 
-      if (isPassEqual) {
-        const sessionInfo = await sessionService.generateSessionInfo(user);
-
-        return sessionInfo;
-      } else {
+      if (!isPassEqual) {
         throw new Error('Password not valid');
       }
-    } catch (e) {
-      console.error(e);
+
+      return user
+    } catch (error) {
       throw error;
     }
   }

@@ -1,4 +1,4 @@
-export class DataTransferObject {
+export class UsersDto {
   constructor(data = null) {
     this.username = data?.username;
     this.status = data?.status || 'client';

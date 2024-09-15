@@ -1,9 +1,11 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 import { authMiddleware } from '../middlewares/authMiddleware.mjs';
+import jwt from 'jsonwebtoken'
 
 export function createMessageController(app) {
   const messageService = diContainer.resolve(SERVICES.messages);
+  const chatService = diContainer.resolve(SERVICES.chats);
 
   /**
    * @swagger
@@ -82,17 +84,33 @@ export function createMessageController(app) {
    *                   description: Сообщение об ошибке авторизации
    */
 
-  app.post('/api/v1/:chatId/message', authMiddleware, async (req, res) => {
-    const { author, content, timeStamp } = req.body;
-    const { chatId } = req.params;
+  app.post(
+    '/api/v1/:chatId/message/',
+    authMiddleware,
+    async (req, res) => {
+      const { author, content } = req.body;
+      const { chatId } = req.params;
+      const { userId } = jwt.decode(req.headers['authorization'])
 
-    if (!chatId || !content || !author || timeStamp) {
-      return res.status(400).json({ error: 'Provide all required fields' });
+      if (!chatId || !content || !author) {
+        return res.status(400).json({ error: 'Provide all required fields' });
+      }
+
+      try {
+        const chat = await chatService.getChatById(userId, chatId);
+
+        if (!chat) {
+          return res.status(404).json({ error: 'Chat not found' });
+        }
+
+        const newMessage = await messageService.createMessage(chatId, req.body);
+        return res.status(201).json(newMessage);
+      } catch (error) {
+        console.error(error);
+        return res.status(400).json({ error: error.message });
+      }
     }
-
-    const newMessage = await messageService.createMessage(req.body);
-    res.status(201).json(newMessage);
-  });
+  );
 
   app.get('/api/v1/:chatId/messages', authMiddleware, async (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
@@ -286,7 +304,7 @@ export function createMessageController(app) {
     }
   );
 
-  app.put('/api/v1/:chatId/messages/:messageId', (req, res) => {});
+  app.put('/api/v1/:chatId/messages/:messageId', (req, res) => { });
   /**
    * @swagger
    * /api/v1/{chatId}/messages/{messageId}:
@@ -325,6 +343,7 @@ export function createMessageController(app) {
     authMiddleware,
     async (req, res) => {
       const { chatId, messageId } = req.params;
+      const { authorization } = req.headers
 
       if (!messageId || !chatId) {
         return res.status(400).json({
@@ -338,12 +357,13 @@ export function createMessageController(app) {
           messageId
         );
 
-        res.status(200).json({
-          id: deletedMessageId,
-        });
+        return res.status(200).json(deletedMessageId);
       } catch (error) {
         console.error(error);
-        res.status(400).json(error.message);
+
+        return res.status(400).json({
+          error: error.message
+        });
       }
     }
   );

@@ -1,10 +1,10 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 import { authMiddleware } from '../middlewares/authMiddleware.mjs';
-import jwt from 'jsonwebtoken'
 
 export function createChatController(app) {
   const chatService = diContainer.resolve(SERVICES.chats);
+  const sessionService = diContainer.resolve(SERVICES.sessions)
 
   /**
    * @swagger
@@ -84,8 +84,9 @@ export function createChatController(app) {
 
   app.post('/api/v1/chats', authMiddleware, async (req, res) => {
     try {
+      console.log('here')
       const { name, description, type } = req.body;
-      const { userId } = jwt.decode(req.headers['authorization'])
+      const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
 
       if (!name || !description || !type) {
         res.status(400).json({ error: 'Provide all fields' });
@@ -108,12 +109,12 @@ export function createChatController(app) {
     }
   });
 
-  app.get('/api/v1/chats-stream/', authMiddleware, (req, res) => {
+  app.get('/api/v1/chats-stream/', authMiddleware, async (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    const { userId } = jwt.decode(req.headers['authorization'])
+    const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
     chatService.createChatStream(userId, res);
 
     req.on('close', () => {
@@ -198,7 +199,7 @@ export function createChatController(app) {
     async (req, res) => {
       try {
         const { chatId } = req.params;
-        const { userId } = req.headers['authorization']
+        const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
         const isChatDeleteAllowed = await chatService.isDeleteAllowed(
           userId,
           chatId
@@ -224,7 +225,7 @@ export function createChatController(app) {
     authMiddleware,
     async (req, res) => {
       const { chatId } = req.params;
-      const { userId } = req.headers['authorization']
+      const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
       if (!userId || !chatId) {
         res.status(400).json({ error: 'Provide all fields' });
       }
@@ -323,7 +324,7 @@ export function createChatController(app) {
   app.put('/api/v1/chats/:chatId', authMiddleware, async (req, res) => {
     try {
       const { chatId } = req.params;
-      const { userId } = req.headers['authorization']
+      const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
       const updatedChat = await chatService.updateChat(
         userId,
         chatId,
@@ -395,7 +396,7 @@ export function createChatController(app) {
   app.get('/api/v1/chats/:chatId', authMiddleware, async (req, res) => {
     try {
       const { chatId } = req.params;
-      const { userId } = req.headers['authorization']
+      const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
       const chatById = await chatService.getChatById(userId, chatId);
 
       return res.status(200).json(chatById);

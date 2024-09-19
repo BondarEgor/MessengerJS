@@ -1,11 +1,11 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 import { authMiddleware } from '../middlewares/authMiddleware.mjs';
-import jwt from 'jsonwebtoken'
 
 export function createMessageController(app) {
   const messageService = diContainer.resolve(SERVICES.messages);
   const chatService = diContainer.resolve(SERVICES.chats);
+  const sessionService = diContainer.resolve(SERVICES.sessions)
 
   /**
    * @swagger
@@ -90,7 +90,7 @@ export function createMessageController(app) {
     async (req, res) => {
       const { author, content } = req.body;
       const { chatId } = req.params;
-      const { userId } = jwt.decode(req.headers['authorization'])
+      const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
 
       if (!chatId || !content || !author) {
         return res.status(400).json({ error: 'Provide all required fields' });

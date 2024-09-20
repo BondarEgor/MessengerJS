@@ -91,7 +91,8 @@ export function createChatController(app) {
       /**
        * TODO: Добавить функцию валидации входящих полей.
        * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-       */ if (!name || !description || !type) {
+       */
+      if (!name || !description || !type) {
         res.status(400).json({ error: 'Provide all fields' });
 
         return;

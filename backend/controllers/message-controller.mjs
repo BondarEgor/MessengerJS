@@ -93,7 +93,8 @@ export function createMessageController(app) {
     /**
      * TODO: Добавить функцию валидации входящих полей.
      * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-     */ if (!chatId || !content || !author) {
+     */
+    if (!chatId || !content || !author) {
       return res.status(400).json({ error: 'Provide all required fields' });
     }
 
@@ -119,7 +120,8 @@ export function createMessageController(app) {
     /**
      * TODO: Добавить функцию валидации входящих полей.
      * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-     */ const { chatId } = req.params;
+     */
+    const { chatId } = req.params;
 
     messageService.createMessageStream(res, chatId);
 
@@ -159,7 +161,8 @@ export function createMessageController(app) {
     /**
      * TODO: Добавить функцию валидации входящих полей.
      * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-     */ if (!chatId) {
+     */
+    if (!chatId) {
       return res.status(400).json({
         message: 'Provide chatId',
       });
@@ -214,7 +217,8 @@ export function createMessageController(app) {
       /**
        * TODO: Добавить функцию валидации входящих полей.
        * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-       */ if (!messageId || !chatId) {
+       */
+      if (!messageId || !chatId) {
         return res.status(400).json({
           message: 'Provide messageId',
         });
@@ -283,7 +287,8 @@ export function createMessageController(app) {
       /**
        * TODO: Добавить функцию валидации входящих полей.
        * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-       */ if (!messageId || !chatId) {
+       */
+      if (!messageId || !chatId) {
         return res.status(400).json({
           message: 'Provide messageId or chatId',
         });
@@ -354,7 +359,8 @@ export function createMessageController(app) {
       /**
        * TODO: Добавить функцию валидации входящих полей.
        * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-       */ if (!messageId || !chatId) {
+       */
+      if (!messageId || !chatId) {
         return res.status(400).json({
           message: 'Provide messageId or chatId',
         });

@@ -54,7 +54,8 @@ export function createRegistrationController(app) {
       /**
        * TODO: Добавить функцию валидации входящих полей.
        * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-       */ if (!username || !password || !email) {
+       */
+      if (!username || !password || !email) {
         throw new Error('Provide all the fields');
       }
 

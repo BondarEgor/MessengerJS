@@ -71,7 +71,7 @@ export class SessionDao {
     const isTokenExpired = this.isTokenFresh(token);
 
     if (isTokenExpired) {
-      const { refreshToken, userId } = await this.getSessionByToken(token);
+      const { refreshToken } = await this.getSessionByToken(token);
 
       if (!refreshToken) {
         throw new Error('No refresh token');

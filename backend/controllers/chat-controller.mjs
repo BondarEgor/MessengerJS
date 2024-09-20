@@ -4,7 +4,7 @@ import { authMiddleware } from '../middlewares/authMiddleware.mjs';
 
 export function createChatController(app) {
   const chatService = diContainer.resolve(SERVICES.chats);
-  const sessionService = diContainer.resolve(SERVICES.sessions)
+  const sessionService = diContainer.resolve(SERVICES.sessions);
 
   /**
    * @swagger
@@ -85,9 +85,13 @@ export function createChatController(app) {
   app.post('/api/v1/chats', authMiddleware, async (req, res) => {
     try {
       const { name, description, type } = req.body;
-      const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
-      //TODO: Добавить функциюю валидации входящих полей
-      if (!name || !description || !type) {
+      const { userId } = await sessionService.getSessionByToken(
+        req.headers['authorization']
+      );
+      /**
+       * TODO: Добавить функцию валидации входящих полей.
+       * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
+       */ if (!name || !description || !type) {
         res.status(400).json({ error: 'Provide all fields' });
 
         return;
@@ -114,11 +118,13 @@ export function createChatController(app) {
     res.setHeader('Connection', 'keep-alive');
 
     try {
-      const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
+      const { userId } = await sessionService.getSessionByToken(
+        req.headers['authorization']
+      );
       chatService.createChatStream(userId, res);
     } catch (error) {
-      console.error({ error: error.message })
-      return res.status(404).json({ error: error.message })
+      console.error({ error: error.message });
+      return res.status(404).json({ error: error.message });
     }
 
     req.on('close', () => {
@@ -197,32 +203,30 @@ export function createChatController(app) {
    *                   example: "Internal server error"
    */
 
-  app.delete(
-    '/api/v1/chats/:chatId',
-    authMiddleware,
-    async (req, res) => {
-      try {
-        const { chatId } = req.params;
-        const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
-        const isChatDeleteAllowed = await chatService.isDeleteAllowed(
-          userId,
-          chatId
-        );
+  app.delete('/api/v1/chats/:chatId', authMiddleware, async (req, res) => {
+    try {
+      const { chatId } = req.params;
+      const { userId } = await sessionService.getSessionByToken(
+        req.headers['authorization']
+      );
+      const isChatDeleteAllowed = await chatService.isDeleteAllowed(
+        userId,
+        chatId
+      );
 
-        if (isChatDeleteAllowed) {
-          const deletedChat = await chatService.deleteChat(userId, chatId);
+      if (isChatDeleteAllowed) {
+        const deletedChat = await chatService.deleteChat(userId, chatId);
 
-          return res.status(200).json(deletedChat);
-        }
-
-        return res.status(400).json('You cant delete this chat');
-      } catch (e) {
-        console.error(e);
-
-        return res.status(400).json({ error: e.message });
+        return res.status(200).json(deletedChat);
       }
+
+      return res.status(400).json('You cant delete this chat');
+    } catch (e) {
+      console.error(e);
+
+      return res.status(400).json({ error: e.message });
     }
-  );
+  });
 
   /**
    * @swagger
@@ -304,7 +308,9 @@ export function createChatController(app) {
   app.put('/api/v1/chats/:chatId', authMiddleware, async (req, res) => {
     try {
       const { chatId } = req.params;
-      const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
+      const { userId } = await sessionService.getSessionByToken(
+        req.headers['authorization']
+      );
       const updatedChat = await chatService.updateChat(
         userId,
         chatId,
@@ -376,7 +382,9 @@ export function createChatController(app) {
   app.get('/api/v1/chats/:chatId', authMiddleware, async (req, res) => {
     try {
       const { chatId } = req.params;
-      const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
+      const { userId } = await sessionService.getSessionByToken(
+        req.headers['authorization']
+      );
       const chatById = await chatService.getChatById(userId, chatId);
 
       return res.status(200).json(chatById);

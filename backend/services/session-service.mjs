@@ -9,7 +9,7 @@ export function sessionService() {
   }
 
   async function generateSessionInfo(user) {
-    return sessionDao.generateSessionInfo(user)
+    return sessionDao.generateSessionInfo(user);
   }
 
   async function getSessionByToken(token) {
@@ -19,6 +19,6 @@ export function sessionService() {
   return {
     generateSessionInfo,
     isTokenValid,
-    getSessionByToken
+    getSessionByToken,
   };
 }

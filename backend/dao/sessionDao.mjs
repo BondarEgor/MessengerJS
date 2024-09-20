@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { ONE_DAY, PATHS } from '../constants.js';
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
@@ -26,40 +26,32 @@ export class SessionDao {
   }
 
   async generateSessionInfo(user) {
-    const sessions = await this.#readSessions()
-    const { userId } = user
-    const existingSession = Object.values(sessions).find(session => session.userId === userId)
+    const sessions = await this.#readSessions();
+    const { userId } = user;
+    const existingSession = Object.values(sessions).find(
+      (session) => session.userId === userId
+    );
 
     if (existingSession) {
-      return sessions[existingSession.token]
+      return sessions[existingSession.token];
     }
 
-    const token = await this.generateToken(user)
-    const refreshToken = await this.generateRefreshToken(user)
+    const token = await this.generateToken(user);
+    const refreshToken = await this.generateToken(user);
 
-    return await this.createSession(
-      {
-        userId,
-        token,
-        refreshToken,
-        expirationTime: new Date().getTime() + ONE_DAY
-      }
-    )
+    return await this.createSession({
+      userId,
+      token,
+      refreshToken,
+      expirationTime: new Date().getTime() + ONE_DAY,
+    });
   }
 
   async generateToken(userData) {
-    const combinedValues = Object.values(userData).join('-')
-    const saltRounds = 10
+    const combinedValues = Object.values(userData).join('-');
+    const saltRounds = 10;
 
-    return await bcrypt.hash(combinedValues, saltRounds)
-  }
-
-  //Тут по факту логика та же, но для разбиения кода все таки оставил два метода
-  async generateRefreshToken(userData) {
-    const combinedValues = Object.values(userData).join('-')
-    const saltRounds = 10
-
-    return await bcrypt.hash(combinedValues, saltRounds)
+    return await bcrypt.hash(combinedValues, saltRounds);
   }
 
   async isUserIdValid(userId) {
@@ -69,35 +61,34 @@ export class SessionDao {
   }
 
   async isTokenValid(token) {
-    const sessions = await this.#readSessions()
-    const isTokenExist = token in sessions
+    const sessions = await this.#readSessions();
+    const isTokenExist = token in sessions;
 
     if (!isTokenExist) {
-      throw new Error('Token does not exist')
+      throw new Error('Token does not exist');
     }
 
-    const isTokenExpired = this.isTokenFresh(token)
+    const isTokenExpired = this.isTokenFresh(token);
 
     if (isTokenExpired) {
-
-      const { refreshToken, userId, } = await this.getSessionByToken(token)
+      const { refreshToken, userId } = await this.getSessionByToken(token);
 
       if (!refreshToken) {
-        throw new Error('No refresh token')
+        throw new Error('No refresh token');
       }
     }
 
-    return await this.updateSession(userId, token)
+    return await this.updateSession(userId, token);
   }
 
   isTokenFresh({ expirationTime }) {
-    const currentTime = new Date().getTime()
+    const currentTime = new Date().getTime();
 
     if (expirationTime < currentTime) {
-      throw new Error('Token is expired')
+      throw new Error('Token is expired');
     }
 
-    return true
+    return true;
   }
 
   async createSession(sessionData) {
@@ -105,7 +96,7 @@ export class SessionDao {
     const { token } = sessionData;
 
     if (sessions[token]) {
-      return sessions[token]
+      return sessions[token];
     }
 
     sessions[token] = sessionData;
@@ -129,25 +120,25 @@ export class SessionDao {
     const sessions = await this.#readSessions();
 
     if (!(token in sessions)) {
-      throw new Error('User not registered')
+      throw new Error('User not registered');
     }
 
-    const sessionInfo = sessions[token]
-    const newToken = await this.generateToken(sessionInfo)
-    const refreshToken = await this.generateRefreshToken(sessionInfo)
+    const sessionInfo = sessions[token];
+    const newToken = await this.generateToken(sessionInfo);
+    const refreshToken = await this.generateToken(sessionInfo);
 
     const updatedSessinInfo = {
       ...sessionInfo,
       token: newToken,
       refreshToken,
-      expirationTime: new Date().getTime() + ONE_DAY
-    }
-    delete sessions[token]
+      expirationTime: new Date().getTime() + ONE_DAY,
+    };
+    delete sessions[token];
 
-    sessions[newToken] = updatedSessinInfo
+    sessions[newToken] = updatedSessinInfo;
     await this.#writeSessions(sessions);
 
-    return sessions[newToken]
+    return sessions[newToken];
   }
 
   async getSessionByToken(token) {
@@ -155,10 +146,10 @@ export class SessionDao {
     const isSessionExist = token in sessions;
 
     if (!isSessionExist) {
-      throw new Error('No session found')
+      throw new Error('No session found');
     }
 
-    return sessions[token]
+    return sessions[token];
   }
 
   async deleteSessionById(userId) {

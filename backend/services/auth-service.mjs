@@ -19,7 +19,7 @@ export function authService() {
         throw new Error('Password not valid');
       }
 
-      return user
+      return user;
     } catch (error) {
       throw error;
     }

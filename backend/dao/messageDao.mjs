@@ -85,9 +85,9 @@ export class MessagesDao {
       throw new Error('Message not found');
     }
 
-    const currentMessage = messages[chatId][messageId]
+    const currentMessage = messages[chatId][messageId];
 
-    return new MessagesDto(currentMessage, true)
+    return new MessagesDto(currentMessage, true);
   }
 
   async createMessage(chatId, messageData) {

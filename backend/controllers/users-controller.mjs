@@ -118,7 +118,9 @@ export function createUsersController(app) {
 
   app.put('/api/v1/users/', authMiddleware, async (req, res) => {
     try {
-      const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
+      const { userId } = await sessionService.getSessionByToken(
+        req.headers['authorization']
+      );
       const userData = req.body;
       const updatedUserInfo = await userService.updateUser(userData, userId);
 
@@ -160,7 +162,9 @@ export function createUsersController(app) {
 
   app.delete('/api/v1/users/', authMiddleware, async (req, res) => {
     try {
-      const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
+      const { userId } = await sessionService.getSessionByToken(
+        req.headers['authorization']
+      );
       const deleteUserId = await userService.deleteUserById(userId);
 
       res.json(deleteUserId);

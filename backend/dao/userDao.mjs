@@ -62,11 +62,9 @@ export class UserDao {
 
   async getUserByEmail(userEmail) {
     const users = await this.#readUsers();
-    const user = Object.values(users).find(
-      ({ email }) => email === userEmail
-    );
+    const user = Object.values(users).find(({ email }) => email === userEmail);
 
-    return user
+    return user;
   }
 
   async getUserById(userId) {

@@ -51,8 +51,10 @@ export function createRegistrationController(app) {
   app.post('/api/v1/registration', async (req, res) => {
     try {
       const { username, password, email } = req.body;
-//TODO: Добавить функциюю валидации входящих полей
-      if (!username || !password || !email) {
+      /**
+       * TODO: Добавить функцию валидации входящих полей.
+       * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
+       */ if (!username || !password || !email) {
         throw new Error('Provide all the fields');
       }
 

@@ -98,17 +98,17 @@ export class ChatDao {
   async deleteChatById(userId, chatId) {
     const chats = await this.#readChats();
 
-    if ((!userId in chats)) {
-      throw new Error(`No user with id ${userId} found`)
+    if ((!userId) in chats) {
+      throw new Error(`No user with id ${userId} found`);
     }
 
-    if ((!chatId in chats[userId])) {
-      throw new Error(`No chat with id ${chatId} found`)
+    if ((!chatId) in chats[userId]) {
+      throw new Error(`No chat with id ${chatId} found`);
     }
 
-    const currChat = chats[userId][chatId]
+    const currChat = chats[userId][chatId];
 
-    return new ChatsDto(currChat, true)
+    return new ChatsDto(currChat, true);
   }
 
   async updateChat(userId, chatId, updateData) {

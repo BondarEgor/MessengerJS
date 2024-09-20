@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import { PATHS } from '../constants.js';
-import { DataTransferObject } from '../dto/dto.mjs';
+import { UsersDto } from '../dto/usersDto.mjs';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
@@ -14,19 +14,25 @@ export class UserDao {
   async #readUsers() {
     try {
       const data = await fs.readFile(this.#filePath, 'utf-8');
+
       return JSON.parse(data);
-    } catch (e) {
-      console.error(e)
+    } catch (error) {
+      const directoryPath = path.dirname(this.#filePath);
+
+      await fs.mkdir(directoryPath, { recursive: true });
       await fs.writeFile(this.#filePath, JSON.stringify([]));
+
+      throw error;
     }
   }
+
   async #writeUsers(users) {
     try {
       await fs.writeFile(this.#filePath, JSON.stringify(users, null, 2));
 
       return true;
     } catch (e) {
-      console.error(e)
+      console.error(e);
       return false;
     }
   }
@@ -39,9 +45,8 @@ export class UserDao {
 
   async createUser(userData) {
     const users = (await this.#readUsers()) || {};
-    const { username } = userData;
-
-    const isExists = await this.getUserByName(username);
+    const { email } = userData;
+    const isExists = await this.getUserByEmail(email);
 
     if (isExists) {
       throw new Error('User already exists');
@@ -55,13 +60,11 @@ export class UserDao {
     return true;
   }
 
-  async getUserByName(username) {
+  async getUserByEmail(userEmail) {
     const users = await this.#readUsers();
-    const isUserExists = Object.values(users).find(
-      (user) => user.username === username
-    );
+    const user = Object.values(users).find(({ email }) => email === userEmail);
 
-    return isUserExists ?? null;
+    return user;
   }
 
   async getUserById(userId) {
@@ -78,7 +81,7 @@ export class UserDao {
       throw new Error('No users found');
     }
 
-    return users.map(DataTransferObject);
+    return users.map(UsersDto);
   }
 
   async deleteUserById(userId) {
@@ -95,7 +98,7 @@ export class UserDao {
 
       return userId;
     } catch (e) {
-      console.error(e)
+      console.error(e);
       throw new Error(`Error deleting user: ${e.message}`);
     }
   }

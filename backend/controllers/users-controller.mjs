@@ -49,10 +49,10 @@ export function createUsersController(app) {
   app.get('/api/v1/users', authMiddleware, async (_, res) => {
     try {
       const users = await userService.getAllUsers();
-      res.status(200).json(users);
+      return res.status(200).json(users);
     } catch (e) {
-      console.error(e)
-      res.status(500).json({ message: e.message });
+      console.error(e);
+      return res.status(500).json({ message: e.message });
     }
   });
 
@@ -116,22 +116,18 @@ export function createUsersController(app) {
    *         description: Внутренняя ошибка сервера
    */
 
-  app.put('/api/v1/users/:userId', authMiddleware, async (req, res) => {
-    const { userId } = req.params;
-
-    if (!userId) {
-      res.status(401).json({ message: 'UserId not provided' });
-    }
-
+  app.put('/api/v1/users/', authMiddleware, async (req, res) => {
     try {
+      const { userId } = await sessionService.getSessionByToken(
+        req.headers['authorization']
+      );
       const userData = req.body;
       const updatedUserInfo = await userService.updateUser(userData, userId);
 
-      res.status(200).json(updatedUserInfo);
+      return res.status(200).json(updatedUserInfo);
     } catch (e) {
-      console.error(e)
       console.error(`Faced error updating user: ${e}`);
-      res.status(500).json({ message: e.message });
+      return res.status(500).json({ message: e.message });
     }
   });
 
@@ -164,19 +160,16 @@ export function createUsersController(app) {
    *         description: Внутренняя ошибка сервера
    */
 
-  app.delete('/api/v1/users/:userId', authMiddleware, async (req, res) => {
-    const { userId } = req.params;
-
-    if (!userId) {
-      res.status(401).json({ message: 'Token or id not provided' });
-    }
-
+  app.delete('/api/v1/users/', authMiddleware, async (req, res) => {
     try {
+      const { userId } = await sessionService.getSessionByToken(
+        req.headers['authorization']
+      );
       const deleteUserId = await userService.deleteUserById(userId);
 
       res.json(deleteUserId);
     } catch (e) {
-      console.error(e)
+      console.error(e);
       res.status(404).json(`User can't be deleted`);
     }
   });

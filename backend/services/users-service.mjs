@@ -1,29 +1,24 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 
-export function usersService() {
-  const userDao = diContainer.resolve(SERVICES.userDao);
+export class UsersService {
+  constructor() {
+    this.userDao = diContainer.resolve(SERVICES.userDao);
+  }
 
-  async function getUserById(userId) {
+  async getUserById(userId) {
     return await userDao.getUserById(userId);
   }
 
-  async function updateUser(userData, userId) {
+  async updateUser(userData, userId) {
     return await userDao.updateUser(userData, userId);
   }
 
-  async function deleteUserById(userId) {
+  async deleteUserById(userId) {
     return await userDao.deleteUserById(userId);
   }
 
-  async function getAllUsers() {
+  async getAllUsers() {
     return await userDao.getAllUsers();
   }
-
-  return {
-    getUserById,
-    updateUser,
-    deleteUserById,
-    getAllUsers,
-  };
 }

@@ -50,15 +50,23 @@ export function createRegistrationController(app) {
 
   app.post('/api/v1/registration', async (req, res) => {
     try {
-      const isSuccess = await registrationService.registerNewUser(req.body);
+      const { username, password, email } = req.body;
+      /**
+       * TODO: Добавить функцию валидации входящих полей.
+       * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
+       */
+      if (!username || !password || !email) {
+        throw new Error('Provide all the fields');
+      }
 
+      const isSuccess = await registrationService.registerNewUser(req.body);
       if (isSuccess) {
         res.status(201).json({ message: 'User registererd successfully' });
       } else {
         res.status(400).json({ message: 'User registration failed' });
       }
     } catch (error) {
-      console.error(error)
+      console.error(error);
       res.status(500).json({ message: error.message });
     }
   });

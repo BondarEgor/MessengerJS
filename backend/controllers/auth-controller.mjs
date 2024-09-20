@@ -3,6 +3,7 @@ import { diContainer } from '../di/di.mjs';
 
 export function createAuthController(app) {
   const authService = diContainer.resolve(SERVICES.authorization);
+  const sessionService = diContainer.resolve(SERVICES.sessions);
 
   /**
    * @swagger
@@ -43,17 +44,20 @@ export function createAuthController(app) {
 
   app.post('/api/v1/login', async (req, res) => {
     const { username, password } = req.body;
-
+    /**
+     * TODO: Добавить функцию валидации входящих полей.
+     * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
+     */
     try {
-      const userSessionInfo = await authService.authorizeUser(
-        username,
-        password
-      );
+      const user = await authService.authorizeUser(username, password);
 
-      res.status(200).json(userSessionInfo);
-    } catch (e) {
-      console.error(e)
-      res.status(401).json(`Unauthorized ${e}`);
+      const userSessionInfo = await sessionService.generateSessionInfo(user);
+
+      return res.status(200).json(userSessionInfo);
+    } catch (error) {
+      console.error(error);
+
+      return res.status(401).json({ error: error.message });
     }
   });
 }

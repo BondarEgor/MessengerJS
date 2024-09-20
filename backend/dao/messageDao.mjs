@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { PATHS } from '../constants.js';
 import { v4 as uuid } from 'uuid';
+import { MessagesDto } from '../dto/messagesDto.mjs';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
@@ -15,9 +16,13 @@ export class MessagesDao {
       const messages = await fs.readFile(this.#filePath, 'utf-8');
 
       return JSON.parse(messages);
-    } catch (e) {
-      console.error(e)
+    } catch (error) {
+      const directoryPath = path.dirname(this.#filePath);
+
+      await fs.mkdir(directoryPath, { recursive: true });
       await fs.writeFile(this.#filePath, JSON.stringify({}));
+
+      throw error;
     }
   }
 
@@ -27,7 +32,7 @@ export class MessagesDao {
 
       return true;
     } catch (e) {
-      console.error(e)
+      console.error(e);
       return false;
     }
   }
@@ -72,28 +77,31 @@ export class MessagesDao {
   async deleteMessageById(chatId, messageId) {
     const messages = await this.#readMessages();
 
-    if (!messages[chatId][messageId]) {
-      throw new Error('Message with this id does not exist');
+    if (!(chatId in messages)) {
+      throw new Error('Chat not found');
     }
 
-    delete messages[chatId][messageId];
+    if (!(messageId in messages[chatId])) {
+      throw new Error('Message not found');
+    }
 
-    await this.#writeMessages(messages);
+    const currentMessage = messages[chatId][messageId];
 
-    return messageId;
+    return new MessagesDto(currentMessage, true);
   }
 
-  async createMessage(messageData) {
+  async createMessage(chatId, messageData) {
     const messages = await this.#readMessages();
-    const { chatId } = messageData;
-    const messageId = uuid();
 
     if (!messages[chatId]) {
       messages[chatId] = {};
     }
 
+    const timeStamp = new Date();
+    const messageId = uuid();
     messages[chatId][messageId] = {
       ...messageData,
+      timeStamp,
       id: messageId,
     };
 

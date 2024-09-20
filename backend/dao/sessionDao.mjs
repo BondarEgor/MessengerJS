@@ -1,7 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { PATHS } from '../constants.js';
+import { ONE_DAY, PATHS } from '../constants.js';
+import bcrypt from 'bcrypt';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
@@ -14,10 +15,43 @@ export class SessionDao {
       const data = await fs.readFile(this.#filePath, 'utf-8');
 
       return JSON.parse(data);
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      const directoryPath = path.dirname(this.#filePath);
+
+      await fs.mkdir(directoryPath, { recursive: true });
       await fs.writeFile(this.#filePath, JSON.stringify({}));
+
+      throw error;
     }
+  }
+
+  async generateSessionInfo(user) {
+    const sessions = await this.#readSessions();
+    const { userId } = user;
+    const existingSession = Object.values(sessions).find(
+      (session) => session.userId === userId
+    );
+
+    if (existingSession) {
+      return sessions[existingSession.token];
+    }
+
+    const token = await this.generateToken(user);
+    const refreshToken = await this.generateToken(user);
+
+    return await this.createSession({
+      userId,
+      token,
+      refreshToken,
+      expirationTime: new Date().getTime() + ONE_DAY,
+    });
+  }
+
+  async generateToken(userData) {
+    const combinedValues = Object.values(userData).join('-');
+    const saltRounds = 10;
+
+    return await bcrypt.hash(combinedValues, saltRounds);
   }
 
   async isUserIdValid(userId) {
@@ -28,23 +62,47 @@ export class SessionDao {
 
   async isTokenValid(token) {
     const sessions = await this.#readSessions();
-    const isSessionValid = Object.values(sessions).some((session) => {
-      return session.authToken === token && session.expireDate > Date.now();
-    });
+    const isTokenExist = token in sessions;
 
-    if (!isSessionValid) {
-      throw new Error('Session not valid');
+    if (!isTokenExist) {
+      throw new Error('Token does not exist');
     }
 
-    return isSessionValid;
+    const isTokenExpired = this.isTokenFresh(token);
+
+    if (isTokenExpired) {
+      const { refreshToken } = await this.getSessionByToken(token);
+
+      if (!refreshToken) {
+        throw new Error('No refresh token');
+      }
+    }
+
+    return await this.updateSession(userId, token);
+  }
+
+  isTokenFresh({ expirationTime }) {
+    const currentTime = new Date().getTime();
+
+    if (expirationTime < currentTime) {
+      throw new Error('Token is expired');
+    }
+
+    return true;
   }
 
   async createSession(sessionData) {
     const sessions = await this.#readSessions();
-    const { userId } = sessionData;
-    sessions[userId] = sessionData;
+    const { token } = sessionData;
 
-    return await this.#writeSessions(sessions);
+    if (sessions[token]) {
+      return sessions[token];
+    }
+
+    sessions[token] = sessionData;
+    await this.#writeSessions(sessions);
+
+    return sessions[token];
   }
 
   async #writeSessions(sessions) {
@@ -53,23 +111,45 @@ export class SessionDao {
 
       return true;
     } catch (e) {
-      console.error(e)
+      console.error(e);
       return false;
     }
   }
 
-  async updateSession(userId, updatedSessionInfo) {
+  async updateSession(token) {
     const sessions = await this.#readSessions();
 
-    sessions[userId] = updatedSessionInfo;
+    if (!(token in sessions)) {
+      throw new Error('User not registered');
+    }
 
+    const sessionInfo = sessions[token];
+    const newToken = await this.generateToken(sessionInfo);
+    const refreshToken = await this.generateToken(sessionInfo);
+
+    const updatedSessinInfo = {
+      ...sessionInfo,
+      token: newToken,
+      refreshToken,
+      expirationTime: new Date().getTime() + ONE_DAY,
+    };
+    delete sessions[token];
+
+    sessions[newToken] = updatedSessinInfo;
     await this.#writeSessions(sessions);
+
+    return sessions[newToken];
   }
 
-  async getSessionByUserId(userId) {
+  async getSessionByToken(token) {
     const sessions = await this.#readSessions();
+    const isSessionExist = token in sessions;
 
-    return sessions[userId];
+    if (!isSessionExist) {
+      throw new Error('No session found');
+    }
+
+    return sessions[token];
   }
 
   async deleteSessionById(userId) {

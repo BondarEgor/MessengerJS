@@ -12,21 +12,23 @@ import { UserDao } from './dao/userDao.mjs';
 import { SERVICES } from './di/api.mjs';
 import { diContainer } from './di/di.mjs';
 import { authService } from './services/auth-service.mjs';
-import { messageService } from './services/message-service.mjs';
+import { MessageService } from './services/message-service.mjs';
 import { registrationService } from './services/registration-service.mjs';
 import { sessionService } from './services/session-service.mjs';
-import { usersService } from './services/users-service.mjs';
+import { UsersService } from './services/users-service.mjs';
 import { createChatController } from './controllers/chat-controller.mjs';
-import { chatService } from './services/chat-service.mjs';
+import { ChatService } from './services/chat-service.mjs';
 import { ChatDao } from './dao/chatDao.mjs';
-import { MessagesDao } from './dao/messageDao.mjs'
+import { MessagesDao } from './dao/messageDao.mjs';
+import dotenv from 'dotenv';
+
+//Загружаем переменные окружения
+dotenv.config();
 
 const app = express();
-
 // Использование CORS middleware для разрешения кросс-доменных запросов
 app.use(cors());
 app.use(bodyParser.json());
-
 // Загрузка документации Swagger
 const swaggerOptions = {
   swaggerDefinition: {
@@ -44,22 +46,22 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 diContainer.register(SERVICES.userDao, new UserDao());
-diContainer.register(SERVICES.messages, messageService);
-diContainer.register(SERVICES.messagesDao, new MessagesDao())
+diContainer.register(SERVICES.messagesDao, new MessagesDao());
 diContainer.register(SERVICES.registration, registrationService);
 diContainer.register(SERVICES.authorization, authService);
 diContainer.register(SERVICES.sessionsDao, new SessionDao());
 diContainer.register(SERVICES.sessions, sessionService);
-diContainer.register(SERVICES.users, usersService);
-diContainer.register(SERVICES.chats, chatService);
 diContainer.register(SERVICES.chatsDao, new ChatDao());
+diContainer.register(SERVICES.chats, new ChatService());
+diContainer.register(SERVICES.messages, new MessageService());
+diContainer.register(SERVICES.users, new UsersService());
 
 createRegistrationController(app);
 createAuthController(app);
 
-createMessageController(app);
 createUsersController(app);
 createChatController(app);
+createMessageController(app);
 
 const PORT = 3000;
 app.listen(PORT, () => {

@@ -6,14 +6,18 @@ export async function authMiddleware(req, res, next) {
   const authToken = req.headers['authorization'];
 
   if (!authToken) {
-    return res.status(401).json({ message: 'Token is not valid' });
+    return res.status(401).json({ message: 'Provide authorization header' });
   }
 
-  const isValid = await sessionService.isTokenValid(authToken);
+  try {
+    const valid = await sessionService.isTokenValid(authToken);
 
-  if (!isValid) {
-    res.status(401).json({ message: 'Token not valid' });
+    if (!valid) {
+      return res.status(401).json({ message: 'Token not valid' });
+    }
+
+    next();
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
   }
-
-  next();
 }

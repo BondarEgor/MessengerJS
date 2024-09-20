@@ -1,5 +1,5 @@
 export function getChatComponentStyles() {
-	return `
+  return `
    <style>
         @import url('../common.css');
    
@@ -8,5 +8,5 @@ export function getChatComponentStyles() {
        }
     
     </style>
-   `
+   `;
 }

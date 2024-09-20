@@ -10,30 +10,17 @@ export function registrationService() {
   }
 
   async function registerNewUser(userInfo) {
-    const { username, password, email, avatar } = userInfo;
-
-    if (!username || !password || !email || !avatar) {
-      throw new Error('Provide all the fields');
-    }
-
+    const { password } = userInfo;
     const hashedPassword = await hashPassword(password);
 
     const userData = {
-      username,
+      ...userInfo,
       password: hashedPassword,
-      email,
-      avatar,
       statusId: 'client',
       roleId: 'user',
     };
 
-    const newUser = await userDao.createUser(userData);
-
-    if (newUser) {
-      return true;
-    } else {
-      throw new Error(error);
-    }
+    return await userDao.createUser(userData);
   }
 
   return {

@@ -50,9 +50,9 @@ export function createRegistrationController(app) {
 
   app.post('/api/v1/registration', async (req, res) => {
     try {
-      const { username, password, email, avatar } = req.body;
-
-      if (!username || !password || !email || !avatar) {
+      const { username, password, email } = req.body;
+//TODO: Добавить функциюю валидации входящих полей
+      if (!username || !password || !email) {
         throw new Error('Provide all the fields');
       }
 

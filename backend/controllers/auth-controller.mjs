@@ -44,7 +44,7 @@ export function createAuthController(app) {
 
   app.post('/api/v1/login', async (req, res) => {
     const { username, password } = req.body;
-
+    //TODO: Добавить функциюю валидации входящих полей
     try {
       const user = await authService.authorizeUser(
         username,

@@ -49,10 +49,10 @@ export function createUsersController(app) {
   app.get('/api/v1/users', authMiddleware, async (_, res) => {
     try {
       const users = await userService.getAllUsers();
-      res.status(200).json(users);
+      return res.status(200).json(users);
     } catch (e) {
       console.error(e);
-      res.status(500).json({ message: e.message });
+      return res.status(500).json({ message: e.message });
     }
   });
 
@@ -117,9 +117,8 @@ export function createUsersController(app) {
    */
 
   app.put('/api/v1/users/', authMiddleware, async (req, res) => {
-    const { userId } = req.headers['authorization']
-
     try {
+      const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
       const userData = req.body;
       const updatedUserInfo = await userService.updateUser(userData, userId);
 
@@ -160,9 +159,8 @@ export function createUsersController(app) {
    */
 
   app.delete('/api/v1/users/', authMiddleware, async (req, res) => {
-    const { userId } = req.headers['authorization']
-
     try {
+      const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
       const deleteUserId = await userService.deleteUserById(userId);
 
       res.json(deleteUserId);

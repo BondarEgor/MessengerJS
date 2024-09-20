@@ -6,6 +6,4 @@
   - username
   - password
   - email
-  - avatar
-
 2.

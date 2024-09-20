@@ -111,21 +111,6 @@ export class ChatDao {
     return new ChatsDto(currChat, true)
   }
 
-  async restoreChatById(userId, chatId) {
-    const chats = await this.#readChats();
-    const isChatPresent = await this.#doesChatExist(userId, chatId);
-
-    if (isChatPresent) {
-      let currentChat = chats[userId][chatId];
-
-      chats[userId][chatId] = currentChat;
-    }
-
-    await this.#writeChats(chats);
-
-    return chats[userId][chatId];
-  }
-
   async updateChat(userId, chatId, updateData) {
     const chats = await this.#readChats();
 

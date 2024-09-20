@@ -41,10 +41,6 @@ export class ChatService {
     return deletedChat;
   }
 
-  async restoreChat(userId, chatId) {
-    return await this.chatDao.restoreChatById(userId, chatId);
-  }
-
   async updateChat(userId, chatId, updateData) {
     const updatedChat = await this.chatDao.updateChat(
       userId,

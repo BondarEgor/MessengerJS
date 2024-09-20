@@ -91,7 +91,7 @@ export function createMessageController(app) {
       const { author, content } = req.body;
       const { chatId } = req.params;
       const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
-
+//TODO: Добавить функциюю валидации входящих полей
       if (!chatId || !content || !author) {
         return res.status(400).json({ error: 'Provide all required fields' });
       }
@@ -116,7 +116,7 @@ export function createMessageController(app) {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
-
+    //TODO: Добавить функциюю валидации входящих полей
     const { chatId } = req.params;
 
     messageService.createMessageStream(res, chatId);
@@ -154,7 +154,7 @@ export function createMessageController(app) {
 
   app.get('/api/v1/:chatId/messages', authMiddleware, async (req, res) => {
     const { chatId } = req.params;
-
+//TODO: Добавить функциюю валидации входящих полей
     if (!chatId) {
       return res.status(400).json({
         message: 'Provide chatId',
@@ -207,7 +207,7 @@ export function createMessageController(app) {
     authMiddleware,
     async (req, res) => {
       const { chatId, messageId } = req.params;
-
+//TODO: Добавить функциюю валидации входящих полей
       if (!messageId || !chatId) {
         return res.status(400).json({
           message: 'Provide messageId',
@@ -274,7 +274,7 @@ export function createMessageController(app) {
     async (req, res) => {
       const { chatId, messageId } = req.params;
       const { content } = req.body;
-
+//TODO: Добавить функциюю валидации входящих полей
       if (!messageId || !chatId) {
         return res.status(400).json({
           message: 'Provide messageId or chatId',
@@ -343,8 +343,7 @@ export function createMessageController(app) {
     authMiddleware,
     async (req, res) => {
       const { chatId, messageId } = req.params;
-      const { authorization } = req.headers
-
+//TODO: Добавить функциюю валидации входящих полей
       if (!messageId || !chatId) {
         return res.status(400).json({
           message: 'Provide messageId or chatId',

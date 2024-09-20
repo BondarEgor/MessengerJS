@@ -84,10 +84,9 @@ export function createChatController(app) {
 
   app.post('/api/v1/chats', authMiddleware, async (req, res) => {
     try {
-      console.log('here')
       const { name, description, type } = req.body;
       const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
-
+      //TODO: Добавить функциюю валидации входящих полей
       if (!name || !description || !type) {
         res.status(400).json({ error: 'Provide all fields' });
 
@@ -114,8 +113,13 @@ export function createChatController(app) {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
-    chatService.createChatStream(userId, res);
+    try {
+      const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
+      chatService.createChatStream(userId, res);
+    } catch (error) {
+      console.error({ error: error.message })
+      return res.status(404).json({ error: error.message })
+    }
 
     req.on('close', () => {
       chatService.unsubscribe(userId, res);
@@ -216,30 +220,6 @@ export function createChatController(app) {
         console.error(e);
 
         return res.status(400).json({ error: e.message });
-      }
-    }
-  );
-
-  app.patch(
-    '/api/v1/chats/:chatId/restore',
-    authMiddleware,
-    async (req, res) => {
-      const { chatId } = req.params;
-      const { userId } = await sessionService.getSessionByToken(req.headers['authorization']);
-      if (!userId || !chatId) {
-        res.status(400).json({ error: 'Provide all fields' });
-      }
-
-      try {
-        const restoredChat = await chatService.restoreChat(userId, chatId);
-
-        if (restoredChat) {
-          res.status(200).json(restoredChat);
-        }
-      } catch (error) {
-        console.error(error);
-
-        res.status(400).json({ error: error.message });
       }
     }
   );

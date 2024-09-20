@@ -45,8 +45,8 @@ export class UserDao {
 
   async createUser(userData) {
     const users = (await this.#readUsers()) || {};
-    const { username } = userData;
-    const isExists = await this.getUserByName(username);
+    const { email } = userData;
+    const isExists = await this.getUserByEmail(email);
 
     if (isExists) {
       throw new Error('User already exists');
@@ -60,10 +60,10 @@ export class UserDao {
     return true;
   }
 
-  async getUserByName(name) {
+  async getUserByEmail(userEmail) {
     const users = await this.#readUsers();
     const user = Object.values(users).find(
-      ({ username }) => username === name
+      ({ email }) => email === userEmail
     );
 
     return user

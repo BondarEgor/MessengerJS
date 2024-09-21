@@ -6,8 +6,8 @@ export class UsersService {
     this.userDao = diContainer.resolve(SERVICES.userDao);
   }
 
-  async getUserById(userId) {
-    return await userDao.getUserById(userId);
+  async getUser(userId) {
+    return await userDao.getUser(userId);
   }
 
   async updateUser(userData, userId) {

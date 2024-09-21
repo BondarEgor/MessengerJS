@@ -5,9 +5,9 @@ import { diContainer } from '../di/di.mjs';
 export function authService() {
   const registrationService = diContainer.resolve(SERVICES.registration);
 
-  async function authorizeUser(username, userPassword) {
+  async function authorizeUser(email, userPassword) {
     try {
-      const user = await registrationService.getUserByName(username);
+      const user = await registrationService.getUser(email);
 
       if (!user) {
         throw new Error('User is not registered');

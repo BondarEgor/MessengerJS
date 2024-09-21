@@ -14,7 +14,7 @@ export class UserDao {
   async createUser(userData) {
     const users = (await this.#readUsers()) || {};
     const { email } = userData;
-    const isExists = await this.getUserByEmail(email);
+    const isExists = await this.getUser(email);
 
     if (isExists) {
       throw new Error('User already exists');
@@ -23,22 +23,21 @@ export class UserDao {
     const userId = uuidv4();
     users[userId] = { ...userData, userId };
 
-    await fs.writeFile(this.#filePath, JSON.stringify(users));
+    await this.#writeUsers(users)
 
     return new UsersDto(users[userId]);
   }
 
-  async getUserByEmail(userEmail) {
-    const users = await this.#readUsers();
-    const user = Object.values(users).find(({ email }) => email === userEmail);
-
-    return new UsersDto(user);
-  }
-
-  async getUserById(userId) {
+  async getUser(identifier) {
     const users = await this.#readUsers();
 
-    return users[userId] ? { ...users[userId], password: null } : {};
+    const user = Object.values(users).find(({ userId, email }) => email === identifier || userId === identifier)
+
+    if (user) {
+      return new UsersDto(user)
+    }
+
+    return null
   }
 
   async getAllUsers() {

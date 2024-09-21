@@ -5,8 +5,8 @@ import { diContainer } from '../di/di.mjs';
 export function registrationService() {
   const userDao = diContainer.resolve(SERVICES.userDao);
 
-  async function getUserByName(email) {
-    return await userDao.getUserByEmail(email);
+  async function getUser(email) {
+    return await userDao.getUser(email);
   }
 
   async function registerNewUser(userInfo) {
@@ -25,7 +25,7 @@ export function registrationService() {
 
   return {
     registerNewUser,
-    getUserByName,
+    getUser,
   };
 }
 

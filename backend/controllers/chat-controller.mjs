@@ -1,6 +1,7 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 import { authMiddleware } from '../middlewares/authMiddleware.mjs';
+import { validateFields } from '../middlewares/validateFields.mjs';
 
 export function createChatController(app) {
   const chatService = diContainer.resolve(SERVICES.chats);
@@ -82,36 +83,32 @@ export function createChatController(app) {
    *         description: Internal server error
    */
 
-  app.post('/api/v1/chats', authMiddleware, async (req, res) => {
-    try {
-      const { name, description, type } = req.body;
-      const { userId } = await sessionService.getSessionByToken(
-        req.headers['authorization']
-      );
-      /**
-       * TODO: Добавить функцию валидации входящих полей.
-       * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-       */
-      if (!name || !description || !type) {
-        res.status(400).json({ error: 'Provide all fields' });
+  app.post('/api/v1/chats',
+    validateFields({
+      body: [
+        'name',
+        'description',
+        'type'
+      ]
+    }),
+    authMiddleware, async (req, res) => {
+      try {
+        const token = req.headers['authorization']
+        const { userId } = await sessionService.getSessionByToken(token)
+        const newChat = await chatService.createChat(userId, req.body);
 
-        return;
+        if (!newChat) {
+          res.status(400).json({ error: 'Error while creating chat' });
+        }
+
+        res
+          .status(201)
+          .json({ message: 'Chat successfully created', chat: newChat });
+      } catch (e) {
+        console.error(e);
+        return res.status(400).json({ error: e.message });
       }
-
-      const newChat = await chatService.createChat(userId, req.body);
-
-      if (!newChat) {
-        res.status(400).json({ error: 'Error while creating chat' });
-      }
-
-      res
-        .status(201)
-        .json({ message: 'Chat successfully created', chat: newChat });
-    } catch (e) {
-      console.error(e);
-      res.status(400).json({ error: e.message });
-    }
-  });
+    });
 
   app.get('/api/v1/chats-stream/', authMiddleware, async (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
@@ -204,9 +201,10 @@ export function createChatController(app) {
    *                   example: "Internal server error"
    */
 
-  app.delete('/api/v1/chats/:chatId', authMiddleware, async (req, res) => {
+  app.delete('/api/v1/chats/:chatId'), authMiddleware, async (req, res) => {
+    const { chatId } = req.params;
+
     try {
-      const { chatId } = req.params;
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']
       );
@@ -227,7 +225,7 @@ export function createChatController(app) {
 
       return res.status(400).json({ error: e.message });
     }
-  });
+  }
 
   /**
    * @swagger

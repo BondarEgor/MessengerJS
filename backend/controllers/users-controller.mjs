@@ -49,6 +49,7 @@ export function createUsersController(app) {
   app.get('/api/v1/users', authMiddleware, async (_, res) => {
     try {
       const users = await userService.getAllUsers();
+
       return res.status(200).json(users);
     } catch (e) {
       console.error(e);
@@ -116,7 +117,8 @@ export function createUsersController(app) {
    *         description: Внутренняя ошибка сервера
    */
 
-  app.put('/api/v1/users/', authMiddleware, async (req, res) => {
+  app.put('/api/v1/users/',
+    authMiddleware, async (req, res) => {
     try {
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']

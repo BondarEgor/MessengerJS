@@ -1,5 +1,6 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
+import { validateFields } from '../middlewares/validateFields.mjs';
 
 export function createAuthController(app) {
   const authService = diContainer.resolve(SERVICES.authorization);
@@ -42,22 +43,26 @@ export function createAuthController(app) {
    *         description: Внутренняя ошибка сервера
    */
 
-  app.post('/api/v1/login', async (req, res) => {
-    const { username, password } = req.body;
-    /**
-     * TODO: Добавить функцию валидации входящих полей.
-     * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-     */
-    try {
-      const user = await authService.authorizeUser(username, password);
+  app.post(
+    '/api/v1/login',
+    validateFields({
+      body: ['email', 'password'],
+      query:['some']
+    }),
+    async (req, res) => {
+      const { email, password } = req.body;
 
-      const userSessionInfo = await sessionService.generateSessionInfo(user);
+      try {
+        const user = await authService.authorizeUser(email, password);
 
-      return res.status(200).json(userSessionInfo);
-    } catch (error) {
-      console.error(error);
+        const userSessionInfo = await sessionService.generateSessionInfo(user);
 
-      return res.status(401).json({ error: error.message });
+        return res.status(200).json(userSessionInfo);
+      } catch (error) {
+        console.error(error);
+
+        return res.status(401).json({ error: error.message });
+      }
     }
-  });
+  );
 }

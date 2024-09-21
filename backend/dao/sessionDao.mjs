@@ -61,8 +61,7 @@ export class SessionDao {
   }
 
   async isTokenValid(token) {
-    const sessions = await this.#readSessions();
-    const isTokenExist = token in sessions;
+    const isTokenExist = await this.isTokenExist(token);
 
     if (!isTokenExist) {
       throw new Error('Token does not exist');
@@ -76,11 +75,22 @@ export class SessionDao {
       if (!refreshToken) {
         throw new Error('No refresh token');
       }
+
+      return await this.updateSession(token);
     }
 
-    return await this.updateSession(userId, token);
+    return true
   }
 
+  async isTokenExist(token) {
+    const sessions = await this.#readSessions()
+
+    if (!(token in sessions)) {
+      throw new Error('Token does not exist for this session')
+    }
+
+    return true
+  }
   isTokenFresh({ expirationTime }) {
     const currentTime = new Date().getTime();
 
@@ -88,7 +98,7 @@ export class SessionDao {
       throw new Error('Token is expired');
     }
 
-    return true;
+    return false;
   }
 
   async createSession(sessionData) {

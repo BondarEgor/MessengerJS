@@ -47,7 +47,7 @@ export function createAuthController(app) {
     '/api/v1/login',
     validateFields({
       body: ['email', 'password'],
-      query:['some']
+      query: ['some'],
     }),
     async (req, res) => {
       const { email, password } = req.body;

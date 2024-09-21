@@ -10,21 +10,6 @@ const _dirname = path.dirname(_filename);
 export class SessionDao {
   #filePath = path.join(_dirname, '../data', PATHS.sessions);
 
-  async #readSessions() {
-    try {
-      const data = await fs.readFile(this.#filePath, 'utf-8');
-
-      return JSON.parse(data);
-    } catch (error) {
-      const directoryPath = path.dirname(this.#filePath);
-
-      await fs.mkdir(directoryPath, { recursive: true });
-      await fs.writeFile(this.#filePath, JSON.stringify({}));
-
-      throw error;
-    }
-  }
-
   async generateSessionInfo(user) {
     const sessions = await this.#readSessions();
     const { userId } = user;
@@ -61,37 +46,37 @@ export class SessionDao {
   }
 
   async isTokenValid(token) {
-    const isTokenExist = await this.isTokenExist(token);
+    try {
+      await this.isTokenExist(token);
+      const isTokenExpired = this.isExpired(token);
 
-    if (!isTokenExist) {
-      throw new Error('Token does not exist');
-    }
+      if (isTokenExpired) {
+        const { refreshToken } = await this.getSessionByToken(token);
 
-    const isTokenExpired = this.isTokenFresh(token);
+        if (!refreshToken) {
+          throw new Error('No refresh token');
+        }
 
-    if (isTokenExpired) {
-      const { refreshToken } = await this.getSessionByToken(token);
-
-      if (!refreshToken) {
-        throw new Error('No refresh token');
+        return await this.updateSession(token);
       }
 
-      return await this.updateSession(token);
+      return true;
+    } catch (error) {
+      throw error;
     }
-
-    return true
   }
 
   async isTokenExist(token) {
-    const sessions = await this.#readSessions()
+    const sessions = await this.#readSessions();
 
     if (!(token in sessions)) {
-      throw new Error('Token does not exist for this session')
+      throw new Error('Token does not exist for this session');
     }
 
-    return true
+    return true;
   }
-  isTokenFresh({ expirationTime }) {
+
+  isExpired({ expirationTime }) {
     const currentTime = new Date().getTime();
 
     if (expirationTime < currentTime) {
@@ -113,17 +98,6 @@ export class SessionDao {
     await this.#writeSessions(sessions);
 
     return sessions[token];
-  }
-
-  async #writeSessions(sessions) {
-    try {
-      await fs.writeFile(this.#filePath, JSON.stringify(sessions, null, 2));
-
-      return true;
-    } catch (e) {
-      console.error(e);
-      return false;
-    }
   }
 
   async updateSession(token) {
@@ -168,5 +142,31 @@ export class SessionDao {
     await this.#writeSessions(sessions);
 
     return deletedSession;
+  }
+
+  async #readSessions() {
+    try {
+      const data = await fs.readFile(this.#filePath, 'utf-8');
+
+      return JSON.parse(data);
+    } catch (error) {
+      const directoryPath = path.dirname(this.#filePath);
+
+      await fs.mkdir(directoryPath, { recursive: true });
+      await fs.writeFile(this.#filePath, JSON.stringify({}));
+
+      throw error;
+    }
+  }
+
+  async #writeSessions(sessions) {
+    try {
+      await fs.writeFile(this.#filePath, JSON.stringify(sessions, null, 2));
+
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
   }
 }

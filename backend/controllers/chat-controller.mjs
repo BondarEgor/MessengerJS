@@ -83,32 +83,31 @@ export function createChatController(app) {
    *         description: Internal server error
    */
 
-  app.post('/api/v1/chats',
+  app.post(
+    '/api/v1/chats',
     validateFields({
-      body: [
-        'name',
-        'description',
-        'type'
-      ]
+      body: ['name', 'description', 'type'],
     }),
-    authMiddleware, async (req, res) => {
+    authMiddleware,
+    async (req, res) => {
       try {
-        const token = req.headers['authorization']
-        const { userId } = await sessionService.getSessionByToken(token)
+        const token = req.headers['authorization'];
+        const { userId } = await sessionService.getSessionByToken(token);
         const newChat = await chatService.createChat(userId, req.body);
 
         if (!newChat) {
           res.status(400).json({ error: 'Error while creating chat' });
         }
 
-        res
+        return res
           .status(201)
           .json({ message: 'Chat successfully created', chat: newChat });
       } catch (e) {
         console.error(e);
         return res.status(400).json({ error: e.message });
       }
-    });
+    }
+  );
 
   app.get('/api/v1/chats-stream/', authMiddleware, async (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
@@ -201,31 +200,33 @@ export function createChatController(app) {
    *                   example: "Internal server error"
    */
 
-  app.delete('/api/v1/chats/:chatId'), authMiddleware, async (req, res) => {
-    const { chatId } = req.params;
+  app.delete('/api/v1/chats/:chatId'),
+    authMiddleware,
+    async (req, res) => {
+      const { chatId } = req.params;
 
-    try {
-      const { userId } = await sessionService.getSessionByToken(
-        req.headers['authorization']
-      );
-      const isChatDeleteAllowed = await chatService.isDeleteAllowed(
-        userId,
-        chatId
-      );
+      try {
+        const { userId } = await sessionService.getSessionByToken(
+          req.headers['authorization']
+        );
+        const isChatDeleteAllowed = await chatService.isDeleteAllowed(
+          userId,
+          chatId
+        );
 
-      if (isChatDeleteAllowed) {
-        const deletedChat = await chatService.deleteChat(userId, chatId);
+        if (isChatDeleteAllowed) {
+          const deletedChat = await chatService.deleteChat(userId, chatId);
 
-        return res.status(200).json(deletedChat);
+          return res.status(200).json(deletedChat);
+        }
+
+        return res.status(400).json('You cant delete this chat');
+      } catch (e) {
+        console.error(e);
+
+        return res.status(400).json({ error: e.message });
       }
-
-      return res.status(400).json('You cant delete this chat');
-    } catch (e) {
-      console.error(e);
-
-      return res.status(400).json({ error: e.message });
-    }
-  }
+    };
 
   /**
    * @swagger

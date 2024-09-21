@@ -117,8 +117,7 @@ export function createUsersController(app) {
    *         description: Внутренняя ошибка сервера
    */
 
-  app.put('/api/v1/users/',
-    authMiddleware, async (req, res) => {
+  app.put('/api/v1/users/', authMiddleware, async (req, res) => {
     try {
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']

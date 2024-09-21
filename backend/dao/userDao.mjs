@@ -11,38 +11,6 @@ const _dirname = path.dirname(_filename);
 export class UserDao {
   #filePath = path.join(_dirname, '../data', PATHS.users);
 
-  async #readUsers() {
-    try {
-      const data = await fs.readFile(this.#filePath, 'utf-8');
-
-      return JSON.parse(data);
-    } catch (error) {
-      const directoryPath = path.dirname(this.#filePath);
-
-      await fs.mkdir(directoryPath, { recursive: true });
-      await fs.writeFile(this.#filePath, JSON.stringify([]));
-
-      throw error;
-    }
-  }
-
-  async #writeUsers(users) {
-    try {
-      await fs.writeFile(this.#filePath, JSON.stringify(users, null, 2));
-
-      return true;
-    } catch (e) {
-      console.error(e);
-      return false;
-    }
-  }
-
-  async #isUserExists(userId) {
-    const users = await this.#readUsers();
-
-    return Object.values(users).some((user) => user.userId === userId);
-  }
-
   async createUser(userData) {
     const users = (await this.#readUsers()) || {};
     const { email } = userData;
@@ -57,14 +25,14 @@ export class UserDao {
 
     await fs.writeFile(this.#filePath, JSON.stringify(users));
 
-    return true;
+    return new UsersDto(users[userId]);
   }
 
   async getUserByEmail(userEmail) {
     const users = await this.#readUsers();
     const user = Object.values(users).find(({ email }) => email === userEmail);
 
-    return user;
+    return new UsersDto(user);
   }
 
   async getUserById(userId) {
@@ -115,5 +83,37 @@ export class UserDao {
     await this.#writeUsers(users);
 
     return users[userId];
+  }
+
+  async #readUsers() {
+    try {
+      const data = await fs.readFile(this.#filePath, 'utf-8');
+
+      return JSON.parse(data);
+    } catch (error) {
+      const directoryPath = path.dirname(this.#filePath);
+
+      await fs.mkdir(directoryPath, { recursive: true });
+      await fs.writeFile(this.#filePath, JSON.stringify([]));
+
+      throw error;
+    }
+  }
+
+  async #writeUsers(users) {
+    try {
+      await fs.writeFile(this.#filePath, JSON.stringify(users, null, 2));
+
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  }
+
+  async #isUserExists(userId) {
+    const users = await this.#readUsers();
+
+    return Object.values(users).some((user) => user.userId === userId);
   }
 }

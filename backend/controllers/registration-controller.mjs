@@ -49,13 +49,10 @@ export function createRegistrationController(app) {
    *         description: Внутренняя ошибка сервера
    */
 
-  app.post('/api/v1/registration',
+  app.post(
+    '/api/v1/registration',
     validateFields({
-      body: [
-        'username',
-        'password',
-        'email'
-      ]
+      body: ['username', 'password', 'email'],
     }),
     async (req, res) => {
       try {
@@ -70,5 +67,6 @@ export function createRegistrationController(app) {
         console.error(error);
         res.status(500).json({ message: error.message });
       }
-    });
+    }
+  );
 }

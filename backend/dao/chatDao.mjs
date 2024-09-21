@@ -15,7 +15,7 @@ export class ChatDao {
     const chats = await this.#readChats();
     const { name } = chatData;
 
-    if (chats[userId]) {
+    if (userId in chats) {
       const isChatPresent = Object.values(chats[userId]).some(
         (chat) => name === chat.name
       );
@@ -33,7 +33,9 @@ export class ChatDao {
       },
     };
 
-    return await this.#writeChats(chats);
+    await this.#writeChats(chats);
+
+    return new ChatsDto(chats[userId][chatId]);
   }
 
   async #readChats() {
@@ -98,7 +100,7 @@ export class ChatDao {
   async deleteChatById(userId, chatId) {
     const chats = await this.#readChats();
 
-    if ((!userId) in chats) {
+    if (!(userId in chats)) {
       throw new Error(`No user with id ${userId} found`);
     }
 
@@ -108,7 +110,7 @@ export class ChatDao {
 
     const currChat = chats[userId][chatId];
 
-    return new ChatsDto(currChat, true);
+    return new ChatsDto(currChat, 'delete');
   }
 
   async updateChat(userId, chatId, updateData) {
@@ -125,10 +127,13 @@ export class ChatDao {
       }
     } catch (error) {
       console.error(error);
+
       throw new Error('Chat not found');
     }
 
-    return await this.#writeChats(chats);
+    await this.#writeChats(chats);
+
+    return new ChatsDto(chats[userId[chatId]], 'update');
   }
 
   async getChatById(userId, chatId) {
@@ -139,10 +144,14 @@ export class ChatDao {
       throw new Error('Chat not found');
     }
 
-    return chats[userId][chatId];
+    return new ChatsDto(chats[userId][chatId]);
   }
 
   async getAllChats() {
+    /*TODO: этот метод был и тут видна проблема, что если 
+    мне надо будет смаппить все чаты, то непонятно как их пропустить
+    через ДТО с соответствующими статусами
+    */
     return await this.#readChats();
   }
 }

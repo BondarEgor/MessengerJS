@@ -1,7 +1,5 @@
 export function validateFields(options) {
-    console.log('here')
     return (req, res, next) => {
-        console.log('here')
         const missingFields = [];
         if (options.body) {
             options.body.forEach((field) => {

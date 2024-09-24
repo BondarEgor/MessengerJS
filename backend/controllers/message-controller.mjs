@@ -1,7 +1,7 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 import { authMiddleware } from '../middlewares/authMiddleware.mjs';
-import { authorContentValidate, contentValidate } from '../services/validate-service.mjs';
+import { authorContentValidator, contentValidator } from '../services/validate-service.mjs';
 
 export function createMessageController(app) {
   const messageService = diContainer.resolve(SERVICES.messages);
@@ -85,7 +85,7 @@ export function createMessageController(app) {
    *                   description: Сообщение об ошибке авторизации
    */
 
-  app.post('/api/v1/:chatId/message/', authorContentValidate(), authMiddleware, async (req, res) => {
+  app.post('/api/v1/:chatId/message/', authorContentValidator, authMiddleware, async (req, res) => {
     const { chatId } = req.params;
 
     try {
@@ -251,7 +251,7 @@ export function createMessageController(app) {
 
   app.put(
     '/api/v1/:chatId/messages/:messageId',
-    contentValidate(),
+    contentValidator,
     authMiddleware,
     async (req, res) => {
       const { chatId, messageId } = req.params;

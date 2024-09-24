@@ -1,7 +1,7 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 import { authMiddleware } from '../middlewares/authMiddleware.mjs';
-import { typeDescNameValidate } from '../services/validate-service.mjs';
+import { typeDescNameValidator } from '../services/validate-service.mjs';
 
 export function createChatController(app) {
   const chatService = diContainer.resolve(SERVICES.chats);
@@ -83,7 +83,7 @@ export function createChatController(app) {
    *         description: Internal server error
    */
 
-  app.post('/api/v1/chats', typeDescNameValidate(), authMiddleware, async (req, res) => {
+  app.post('/api/v1/chats', typeDescNameValidator, authMiddleware, async (req, res) => {
     try {
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']

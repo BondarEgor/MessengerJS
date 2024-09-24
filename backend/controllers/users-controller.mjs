@@ -1,7 +1,7 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 import { authMiddleware } from '../middlewares/authMiddleware.mjs';
-import { usernamePasswordValidate } from '../services/validate-service.mjs';
+import { usernamePasswordValidator } from '../services/validate-service.mjs';
 
 export function createUsersController(app) {
   const userService = diContainer.resolve(SERVICES.users);
@@ -117,7 +117,7 @@ export function createUsersController(app) {
    *         description: Внутренняя ошибка сервера
    */
 
-  app.put('/api/v1/users/', usernamePasswordValidate(), authMiddleware, async (req, res) => {
+  app.put('/api/v1/users/', usernamePasswordValidator, authMiddleware, async (req, res) => {
     try {
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']

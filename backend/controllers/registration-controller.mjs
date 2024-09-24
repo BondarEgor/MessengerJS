@@ -1,6 +1,6 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
-import { usernameEmailPasswordValidate } from '../services/validate-service.mjs';
+import { usernameEmailPasswordValidator } from '../services/validate-service.mjs';
 
 export function createRegistrationController(app) {
   const registrationService = diContainer.resolve(SERVICES.registration);
@@ -49,7 +49,7 @@ export function createRegistrationController(app) {
    *         description: Внутренняя ошибка сервера
    */
 
-  app.post('/api/v1/registration', usernameEmailPasswordValidate(), async (req, res) => {
+  app.post('/api/v1/registration', usernameEmailPasswordValidator, async (req, res) => {
     try {
       const isSuccess = await registrationService.registerNewUser(req.body);
 

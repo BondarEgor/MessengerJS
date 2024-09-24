@@ -1,5 +1,6 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
+import { usernamePasswordValidate } from '../services/validate-service.mjs';
 
 export function createAuthController(app) {
   const authService = diContainer.resolve(SERVICES.authorization);
@@ -42,12 +43,9 @@ export function createAuthController(app) {
    *         description: Внутренняя ошибка сервера
    */
 
-  app.post('/api/v1/login', async (req, res) => {
+  app.post('/api/v1/login', usernamePasswordValidate(), async (req, res) => {
     const { username, password } = req.body;
-    /**
-     * TODO: Добавить функцию валидации входящих полей.
-     * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-     */
+
     try {
       const user = await authService.authorizeUser(username, password);
 

@@ -1,5 +1,6 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
+import { usernameEmailPasswordValidate } from '../services/validate-service.mjs';
 
 export function createRegistrationController(app) {
   const registrationService = diContainer.resolve(SERVICES.registration);
@@ -48,18 +49,10 @@ export function createRegistrationController(app) {
    *         description: Внутренняя ошибка сервера
    */
 
-  app.post('/api/v1/registration', async (req, res) => {
+  app.post('/api/v1/registration', usernameEmailPasswordValidate(), async (req, res) => {
     try {
-      const { username, password, email } = req.body;
-      /**
-       * TODO: Добавить функцию валидации входящих полей.
-       * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-       */
-      if (!username || !password || !email) {
-        throw new Error('Provide all the fields');
-      }
-
       const isSuccess = await registrationService.registerNewUser(req.body);
+
       if (isSuccess) {
         res.status(201).json({ message: 'User registererd successfully' });
       } else {

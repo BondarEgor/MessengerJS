@@ -1,6 +1,7 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 import { authMiddleware } from '../middlewares/authMiddleware.mjs';
+import { authorContentValidate, contentValidate } from '../services/validate-service.mjs';
 
 export function createMessageController(app) {
   const messageService = diContainer.resolve(SERVICES.messages);
@@ -84,21 +85,13 @@ export function createMessageController(app) {
    *                   description: Сообщение об ошибке авторизации
    */
 
-  app.post('/api/v1/:chatId/message/', authMiddleware, async (req, res) => {
-    const { author, content } = req.body;
+  app.post('/api/v1/:chatId/message/', authorContentValidate(), authMiddleware, async (req, res) => {
     const { chatId } = req.params;
-    const { userId } = await sessionService.getSessionByToken(
-      req.headers['authorization']
-    );
-    /**
-     * TODO: Добавить функцию валидации входящих полей.
-     * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-     */
-    if (!chatId || !content || !author) {
-      return res.status(400).json({ error: 'Provide all required fields' });
-    }
 
     try {
+      const { userId } = await sessionService.getSessionByToken(
+        req.headers['authorization']
+      )
       const chat = await chatService.getChatById(userId, chatId);
 
       if (!chat) {
@@ -117,12 +110,8 @@ export function createMessageController(app) {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
-    /**
-     * TODO: Добавить функцию валидации входящих полей.
-     * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-     */
-    const { chatId } = req.params;
 
+    const { chatId } = req.params;
     messageService.createMessageStream(res, chatId);
 
     req.on('close', () => {
@@ -158,15 +147,6 @@ export function createMessageController(app) {
 
   app.get('/api/v1/:chatId/messages', authMiddleware, async (req, res) => {
     const { chatId } = req.params;
-    /**
-     * TODO: Добавить функцию валидации входящих полей.
-     * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-     */
-    if (!chatId) {
-      return res.status(400).json({
-        message: 'Provide chatId',
-      });
-    }
 
     try {
       const messagesByChatId = await messageService.getMessagesByChatId(chatId);
@@ -214,15 +194,6 @@ export function createMessageController(app) {
     authMiddleware,
     async (req, res) => {
       const { chatId, messageId } = req.params;
-      /**
-       * TODO: Добавить функцию валидации входящих полей.
-       * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-       */
-      if (!messageId || !chatId) {
-        return res.status(400).json({
-          message: 'Provide messageId',
-        });
-      }
       try {
         const messagesById = await messageService.getMessageById(
           chatId,
@@ -280,25 +251,11 @@ export function createMessageController(app) {
 
   app.put(
     '/api/v1/:chatId/messages/:messageId',
+    contentValidate(),
     authMiddleware,
     async (req, res) => {
       const { chatId, messageId } = req.params;
       const { content } = req.body;
-      /**
-       * TODO: Добавить функцию валидации входящих полей.
-       * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-       */
-      if (!messageId || !chatId) {
-        return res.status(400).json({
-          message: 'Provide messageId or chatId',
-        });
-      }
-
-      if (!content) {
-        return res.status(400).json({
-          message: 'no content',
-        });
-      }
 
       try {
         const updatedMessage = await messageService.updateMessageById(
@@ -317,7 +274,7 @@ export function createMessageController(app) {
     }
   );
 
-  app.put('/api/v1/:chatId/messages/:messageId', (req, res) => {});
+  app.put('/api/v1/:chatId/messages/:messageId', (req, res) => { });
   /**
    * @swagger
    * /api/v1/{chatId}/messages/{messageId}:
@@ -356,15 +313,6 @@ export function createMessageController(app) {
     authMiddleware,
     async (req, res) => {
       const { chatId, messageId } = req.params;
-      /**
-       * TODO: Добавить функцию валидации входящих полей.
-       * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-       */
-      if (!messageId || !chatId) {
-        return res.status(400).json({
-          message: 'Provide messageId or chatId',
-        });
-      }
 
       try {
         const deletedMessageId = await messageService.deleteMessageById(

@@ -1,6 +1,7 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 import { authMiddleware } from '../middlewares/authMiddleware.mjs';
+import { usernamePasswordValidate } from '../services/validate-service.mjs';
 
 export function createUsersController(app) {
   const userService = diContainer.resolve(SERVICES.users);
@@ -116,13 +117,13 @@ export function createUsersController(app) {
    *         description: Внутренняя ошибка сервера
    */
 
-  app.put('/api/v1/users/', authMiddleware, async (req, res) => {
+  app.put('/api/v1/users/', usernamePasswordValidate(), authMiddleware, async (req, res) => {
     try {
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']
       );
-      const userData = req.body;
-      const updatedUserInfo = await userService.updateUser(userData, userId);
+
+      const updatedUserInfo = await userService.updateUser(req.body, userId);
 
       return res.status(200).json(updatedUserInfo);
     } catch (e) {
@@ -167,10 +168,11 @@ export function createUsersController(app) {
       );
       const deleteUserId = await userService.deleteUserById(userId);
 
-      res.json(deleteUserId);
+      return res.json(deleteUserId);
     } catch (e) {
       console.error(e);
-      res.status(404).json(`User can't be deleted`);
+
+      return res.status(404).json(`User can't be deleted`);
     }
   });
 }

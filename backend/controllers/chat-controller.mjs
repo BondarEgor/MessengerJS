@@ -88,6 +88,8 @@ export function createChatController(app) {
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']
       );
+      console.log(req.headers['authorization'])
+      console.log(await sessionService.getSessionByToken(req.headers['authorization']))
       const newChat = await chatService.createChat(userId, req.body);
 
       if (!newChat) {

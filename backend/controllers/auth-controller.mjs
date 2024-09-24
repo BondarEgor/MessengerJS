@@ -1,6 +1,6 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
-import { usernamePasswordValidator } from '../services/validate-service.mjs';
+import { usernameEmailValidator } from '../services/validate-service.mjs';
 
 export function createAuthController(app) {
   const authService = diContainer.resolve(SERVICES.authorization);
@@ -43,11 +43,11 @@ export function createAuthController(app) {
    *         description: Внутренняя ошибка сервера
    */
 
-  app.post('/api/v1/login', usernamePasswordValidator, async (req, res) => {
-    const { username, password } = req.body;
+  app.post('/api/v1/login', usernameEmailValidator, async (req, res) => {
+    const { email, password } = req.body;
 
     try {
-      const user = await authService.authorizeUser(username, password);
+      const user = await authService.authorizeUser(email, password);
 
       const userSessionInfo = await sessionService.generateSessionInfo(user);
 

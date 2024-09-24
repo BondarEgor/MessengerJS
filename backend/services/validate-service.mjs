@@ -1,56 +1,17 @@
 import { validateFields } from '../middlewares/validateFields.mjs'
 
-const emailPasswordValidate = () => {
-    return validateFields({
-        body: ['email', 'password']
-    })
-}
-export const emailPasswordValidator = emailPasswordValidate()
+export const emailPasswordValidator = validateFields({ body: ['email', 'password'] })
 
-const usernameEmailPasswordValidate = () => {
-    return validateFields({
-        body: ['email', 'password', 'username']
-    })
-}
-export const usernameEmailPasswordValidator = usernameEmailPasswordValidate()
+export const usernameEmailPasswordValidator = validateFields({ body: ['email', 'password', 'username'] })
 
-const usernamePasswordValidate = () => {
-    return validateFields({
-        body: ['username', 'password']
-    })
-}
+export const usernamePasswordValidator = validateFields({ body: ['username', 'password'] })
 
-export const usernamePasswordValidator = usernamePasswordValidate()
+export const usernameEmailValidator = validateFields({ body: ['username', 'email'] })
 
-const usernameEmailValidate = () => {
-    return validateFields({
-        body: ['username', 'email']
-    })
-}
+export const contentValidator = validateFields({ body: ['content'] })
 
-export const usernameEmailValidator = usernameEmailValidate()
+export const typeDescNameValidator = validateFields({ body: ['name', 'type', 'description'] })
+
+export const authorContentValidator = validateFields({ body: ['author', 'content'] })
 
 
-const contentValidate = () => {
-    return validateFields({
-        body: ['content']
-    })
-}
-
-export const contentValidator = contentValidate()
-
-const typeDescNameValidate = () => {
-    return validateFields({
-        body: ['name', 'type', 'description']
-    })
-}
-
-export const typeDescNameValidator = typeDescNameValidate()
-
-const authorContentValidate = () => {
-    return validateFields({
-        body: ['author', 'content']
-    })
-}
-
-export const authorContentValidator = authorContentValidate()

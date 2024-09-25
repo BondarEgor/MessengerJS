@@ -1,6 +1,7 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 import { authMiddleware } from '../middlewares/authMiddleware.mjs';
+import { typeDescNameValidator } from '../services/validate-service.mjs';
 
 export function createChatController(app) {
   const chatService = diContainer.resolve(SERVICES.chats);
@@ -82,21 +83,11 @@ export function createChatController(app) {
    *         description: Internal server error
    */
 
-  app.post('/api/v1/chats', authMiddleware, async (req, res) => {
+  app.post('/api/v1/chats', typeDescNameValidator, authMiddleware, async (req, res) => {
     try {
-      const { name, description, type } = req.body;
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']
       );
-      /**
-       * TODO: Добавить функцию валидации входящих полей.
-       * ссылка на задачу: https://github.com/BondarEgor/MessengerJS/issues/15
-       */
-      if (!name || !description || !type) {
-        res.status(400).json({ error: 'Provide all fields' });
-
-        return;
-      }
 
       const newChat = await chatService.createChat(userId, req.body);
 
@@ -386,12 +377,12 @@ export function createChatController(app) {
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']
       );
-      const chatById = await chatService.getChatById(userId, chatId);
+      const chatByChatId = await chatService.getChatById(userId, chatId);
 
-      return res.status(200).json(chatById);
-    } catch (e) {
-      console.error(e);
-      return res.status(400).json({ error: e.message });
+      return res.status(200).json(chatByChatId);
+    } catch ({ message }) {
+      console.error(message);
+      return res.status(400).json({ error: message });
     }
   });
 }

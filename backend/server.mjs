@@ -20,10 +20,6 @@ import { createChatController } from './controllers/chat-controller.mjs';
 import { ChatService } from './services/chat-service.mjs';
 import { ChatDao } from './dao/chatDao.mjs';
 import { MessagesDao } from './dao/messageDao.mjs';
-import dotenv from 'dotenv';
-
-//Загружаем переменные окружения
-dotenv.config();
 
 const app = express();
 // Использование CORS middleware для разрешения кросс-доменных запросов

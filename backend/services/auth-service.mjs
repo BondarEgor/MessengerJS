@@ -7,7 +7,7 @@ export function authService() {
 
   async function authorizeUser(email, userPassword) {
     try {
-      const user = await registrationService.getUserByName(email);
+      const user = await registrationService.getUserByEmail(email);
 
       if (!user) {
         throw new Error('User is not registered');

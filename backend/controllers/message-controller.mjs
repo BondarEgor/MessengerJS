@@ -274,7 +274,6 @@ export function createMessageController(app) {
     }
   );
 
-  app.put('/api/v1/:chatId/messages/:messageId', (req, res) => { });
   /**
    * @swagger
    * /api/v1/{chatId}/messages/{messageId}:

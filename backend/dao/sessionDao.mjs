@@ -65,7 +65,7 @@ export class SessionDao {
     const isTokenExist = token in sessions;
 
     if (!isTokenExist) {
-      throw new Error('Token does not exist');
+      return false;
     }
 
     const isTokenExpired = this.isExpired(token);
@@ -80,17 +80,13 @@ export class SessionDao {
       return await this.updateSession(token);
     }
 
-    return true
+    return true;
   }
 
   isExpired({ expirationTime }) {
     const currentTime = new Date().getTime();
 
-    if (expirationTime < currentTime) {
-      throw new Error('Token is expired');
-    }
-
-    return false;
+    return expirationTime > currentTime;
   }
 
   async createSession(sessionData) {
@@ -122,7 +118,7 @@ export class SessionDao {
     const sessions = await this.#readSessions();
 
     if (!(token in sessions)) {
-      throw new Error('User not registered');
+      throw new Error('No token found');
     }
 
     const sessionInfo = sessions[token];

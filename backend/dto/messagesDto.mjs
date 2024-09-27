@@ -1,7 +1,7 @@
-import { messageStatusMapping } from "./constants.mjs";
+import { messageStatusMapping } from './constants.mjs';
 
 function getMessageStatus(status) {
-  return messageStatusMapping[status] || messageStatusMapping.default
+  return messageStatusMapping[status] || messageStatusMapping.default;
 }
 
 export function messagesMapper({ content, timeStamp, author, id }, status) {
@@ -10,6 +10,6 @@ export function messagesMapper({ content, timeStamp, author, id }, status) {
     timeStamp,
     id,
     author,
-    status: getMessageStatus(status)
-  }
+    status: getMessageStatus(status),
+  };
 }

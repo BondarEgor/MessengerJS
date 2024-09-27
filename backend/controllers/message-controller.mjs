@@ -1,7 +1,10 @@
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 import { authMiddleware } from '../middlewares/authMiddleware.mjs';
-import { authorContentValidator, contentValidator } from '../services/validate-service.mjs';
+import {
+  authorContentValidator,
+  contentValidator,
+} from '../services/validate-service.mjs';
 
 export function createMessageController(app) {
   const messageService = diContainer.resolve(SERVICES.messages);
@@ -85,26 +88,35 @@ export function createMessageController(app) {
    *                   description: Сообщение об ошибке авторизации
    */
 
-  app.post('/api/v1/:chatId/message/', authorContentValidator, authMiddleware, async (req, res) => {
-    const { chatId } = req.params;
+  app.post(
+    '/api/v1/:chatId/message/',
+    authorContentValidator,
+    authMiddleware,
+    async (req, res) => {
+      const { chatId } = req.params;
 
-    try {
-      const { userId } = await sessionService.getSessionByToken(
-        req.headers['authorization']
-      )
-      const chat = await chatService.getChatByChatId(userId, chatId);
+      try {
+        const { userId } = await sessionService.getSessionByToken(
+          req.headers['authorization']
+        );
+        const chat = await chatService.getChatByChatId(userId, chatId);
 
-      if (!chat) {
-        return res.status(404).json({ error: 'Chat not found' });
+        if (!chat) {
+          return res.status(404).json({ error: 'Chat not found' });
+        }
+
+        const newMessage = await messageService.createMessage(
+          userId,
+          chatId,
+          req.body
+        );
+        return res.status(201).json(newMessage);
+      } catch (error) {
+        console.error(error);
+        return res.status(400).json({ error: error.message });
       }
-
-      const newMessage = await messageService.createMessage(userId, chatId, req.body);
-      return res.status(201).json(newMessage);
-    } catch (error) {
-      console.error(error);
-      return res.status(400).json({ error: error.message });
     }
-  });
+  );
 
   app.get('/api/v1/:chatId/messages', authMiddleware, async (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');

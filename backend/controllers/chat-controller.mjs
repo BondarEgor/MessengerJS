@@ -83,26 +83,31 @@ export function createChatController(app) {
    *         description: Internal server error
    */
 
-  app.post('/api/v1/chats', typeDescNameValidator, authMiddleware, async (req, res) => {
-    try {
-      const { userId } = await sessionService.getSessionByToken(
-        req.headers['authorization']
-      );
+  app.post(
+    '/api/v1/chats',
+    typeDescNameValidator,
+    authMiddleware,
+    async (req, res) => {
+      try {
+        const { userId } = await sessionService.getSessionByToken(
+          req.headers['authorization']
+        );
 
-      const newChat = await chatService.createChat(userId, req.body);
+        const newChat = await chatService.createChat(userId, req.body);
 
-      if (!newChat) {
-        res.status(400).json({ error: 'Error while creating chat' });
+        if (!newChat) {
+          res.status(400).json({ error: 'Error while creating chat' });
+        }
+
+        res
+          .status(201)
+          .json({ message: 'Chat successfully created', chat: newChat });
+      } catch (e) {
+        console.error(e);
+        res.status(400).json({ error: e.message });
       }
-
-      res
-        .status(201)
-        .json({ message: 'Chat successfully created', chat: newChat });
-    } catch (e) {
-      console.error(e);
-      res.status(400).json({ error: e.message });
     }
-  });
+  );
 
   app.get('/api/v1/chats-stream/', authMiddleware, async (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');

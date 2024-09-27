@@ -30,20 +30,20 @@ export class ChatDao {
       ...chats[userId],
       [chatId]: {
         ...chatData,
-        chatId
+        chatId,
       },
     };
 
     await this.#writeChats(chats);
 
-    return chatsMapper(chats[userId][chatId])
+    return chatsMapper(chats[userId][chatId]);
   }
 
   async canUserDeleteChat(userId, chatId) {
     //Тут как будто нужно поменять название переменной, но пока сделал так
-    const isChatPresent = await this.doesChatExist(userId, chatId)
+    const isChatPresent = await this.doesChatExist(userId, chatId);
 
-    return isChatPresent
+    return isChatPresent;
   }
 
   async deleteChatById(userId, chatId) {
@@ -96,10 +96,10 @@ export class ChatDao {
   }
 
   async getAllChats(userId) {
-    const chats = await this.#readChats()
-    const isUserPresent = userId in chats
+    const chats = await this.#readChats();
+    const isUserPresent = userId in chats;
 
-    return isUserPresent ? chats[userId] : null
+    return isUserPresent ? chats[userId] : null;
   }
 
   async #readChats() {
@@ -130,12 +130,12 @@ export class ChatDao {
 
   async doesChatExist(userId, chatIdentifier) {
     const chats = await this.#readChats();
-    const isChatPresent = userId in chats && Object.values(chats[userId]).some(chat => Object.values(chat).some(prop => prop === chatIdentifier))
+    const isChatPresent =
+      userId in chats &&
+      Object.values(chats[userId]).some((chat) =>
+        Object.values(chat).some((prop) => prop === chatIdentifier)
+      );
 
-    if (!isChatPresent) {
-      throw new Error('Chat not found')
-    }
-
-    return isChatPresent
+    return isChatPresent;
   }
 }

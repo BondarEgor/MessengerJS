@@ -19,23 +19,23 @@ export class MessagesDao {
       throw new Error('Chat with this id does not exist');
     }
 
-    return Object.values(messages[chatId]).map(messagesMapper)
+    return Object.values(messages[chatId]).map(messagesMapper);
   }
 
   async getMessageByMessageId(chatId, messageId) {
     const messages = await this.#readMessages();
-    const isMessageExist = await this.#doesMessageExist(chatId, messageId)
+    const isMessageExist = await this.#doesMessageExist(chatId, messageId);
 
     if (isMessageExist) {
       throw new Error('Message with this id does not exist');
     }
 
-    return messagesMapper(messages[chatId][messageId])
+    return messagesMapper(messages[chatId][messageId]);
   }
 
   async updateMessageById(chatId, messageId, content) {
     const messages = await this.#readMessages();
-    const isMessageExist = await this.#doesMessageExist(chatId, messageId)
+    const isMessageExist = await this.#doesMessageExist(chatId, messageId);
 
     if (isMessageExist) {
       throw new Error('Message with this id does not exist');
@@ -48,30 +48,33 @@ export class MessagesDao {
 
     await this.#writeMessages(messages);
 
-    return userMapper(messages[chatId][messageId], 'update')
+    return userMapper(messages[chatId][messageId], 'update');
   }
 
   async deleteMessageById(chatId, messageId) {
     const messages = await this.#readMessages();
-    const isMessageExist = await this.#doesMessageExist(chatId, messageId)
+    const isMessageExist = await this.#doesMessageExist(chatId, messageId);
 
     if (isMessageExist) {
       throw new Error('Message with this id does not exist');
     }
 
-    return messagesMapper(messages[chatId][messageId], messageStatusMapping.delete);
+    return messagesMapper(
+      messages[chatId][messageId],
+      messageStatusMapping.delete
+    );
   }
 
   async createMessage(chatId, messageData) {
     const messages = await this.#readMessages();
 
-    const messageId = uuid()
+    const messageId = uuid();
     messages[chatId] = {
       [messageId]: {
         ...messageData,
         timeStamp: new Date(),
         id: messageId,
-      }
+      },
     };
 
     await this.#writeMessages(messages);
@@ -106,10 +109,10 @@ export class MessagesDao {
   }
 
   async #doesMessageExist(chatId, messageId) {
-    const messages = await this.#readMessages()
+    const messages = await this.#readMessages();
+    const isMessageExist =
+      chatId in messages || !(messageId in messages[chatId]);
 
-    if (!(chatId in messages) || !(messageId in messages[chatId])) {
-      throw new Error('Message with this id does not exist')
-    }
+    return isMessageExist;
   }
 }

@@ -45,7 +45,7 @@ export function createAuthController(app) {
 
   app.post('/api/v1/login', usernameEmailValidator, async (req, res) => {
     const { email, password } = req.body;
-    
+
     try {
       const user = await authService.authorizeUser(email, password);
 

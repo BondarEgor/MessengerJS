@@ -1,7 +1,7 @@
-import { chatStatusMapping } from './constants.mjs'
+import { chatStatusMapping } from './constants.mjs';
 
 function getChatStatus(status) {
-  return chatStatusMapping[status] || chatStatusMapping.default
+  return chatStatusMapping[status] || chatStatusMapping.default;
 }
 
 export function chatsMapper({ name, description, type }, status) {
@@ -9,6 +9,6 @@ export function chatsMapper({ name, description, type }, status) {
     status: getChatStatus(status),
     name,
     description,
-    type
-  }
+    type,
+  };
 }

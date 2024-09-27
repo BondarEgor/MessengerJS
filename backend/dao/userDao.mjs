@@ -28,25 +28,25 @@ export class UserDao {
 
   async getUserByEmail(userEmail) {
     const users = await this.#readUsers();
-    
+
     return Object.values(users).find(({ email }) => email === userEmail);
   }
 
   async getUserById(userId) {
     const users = await this.#readUsers();
-    const isUserExists = await this.#isUserExists(userId)
+    const isUserExists = await this.#isUserExists(userId);
 
     if (!isUserExists) {
-      throw new Error('User not found')
+      throw new Error('User not found');
     }
 
-    return userMapper(users[userId])
+    return userMapper(users[userId]);
   }
 
   async getAllUsers() {
-    const users = await this.#readUsers() || {}
+    const users = (await this.#readUsers()) || {};
 
-    return Object.values(users).map(userMapper)
+    return Object.values(users).map(userMapper);
   }
 
   async deleteUserById(userId) {
@@ -62,7 +62,7 @@ export class UserDao {
 
   async updateUser(updateData, userId) {
     const users = await this.#readUsers();
-    const isUserExists = await this.#isUserExists(userId)
+    const isUserExists = await this.#isUserExists(userId);
 
     if (!isUserExists) {
       throw new Error(`User with ${userId} not found`);
@@ -71,7 +71,7 @@ export class UserDao {
     users[userId] = { ...users[userId], ...updateData };
     await this.#writeUsers(users);
 
-    return userMapper(users[userId])
+    return userMapper(users[userId]);
   }
 
   async #readUsers() {

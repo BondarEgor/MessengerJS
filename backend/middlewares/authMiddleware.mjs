@@ -11,7 +11,7 @@ export async function authMiddleware(req, res, next) {
 
   try {
     const valid = await sessionService.isTokenValid(authToken);
-    
+
     if (!valid) {
       return res.status(401).json({ message: 'Token not valid' });
     }

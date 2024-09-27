@@ -92,13 +92,13 @@ export function createMessageController(app) {
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']
       )
-      const chat = await chatService.getChatById(userId, chatId);
+      const chat = await chatService.getChatByChatId(userId, chatId);
 
       if (!chat) {
         return res.status(404).json({ error: 'Chat not found' });
       }
 
-      const newMessage = await messageService.createMessage(chatId, req.body);
+      const newMessage = await messageService.createMessage(userId, chatId, req.body);
       return res.status(201).json(newMessage);
     } catch (error) {
       console.error(error);
@@ -195,7 +195,7 @@ export function createMessageController(app) {
     async (req, res) => {
       const { chatId, messageId } = req.params;
       try {
-        const messagesById = await messageService.getMessageById(
+        const messagesById = await messageService.getMessageByMessageId(
           chatId,
           messageId
         );

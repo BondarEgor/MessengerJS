@@ -68,7 +68,7 @@ export class SessionDao {
       throw new Error('Token does not exist');
     }
 
-    const isTokenExpired = this.isTokenFresh(token);
+    const isTokenExpired = this.isExpired(token);
 
     if (isTokenExpired) {
       const { refreshToken } = await this.getSessionByToken(token);
@@ -76,19 +76,21 @@ export class SessionDao {
       if (!refreshToken) {
         throw new Error('No refresh token');
       }
+
+      return await this.updateSession(token);
     }
 
-    return await this.updateSession(userId, token);
+    return true
   }
 
-  isTokenFresh({ expirationTime }) {
+  isExpired({ expirationTime }) {
     const currentTime = new Date().getTime();
 
     if (expirationTime < currentTime) {
       throw new Error('Token is expired');
     }
 
-    return true;
+    return false;
   }
 
   async createSession(sessionData) {

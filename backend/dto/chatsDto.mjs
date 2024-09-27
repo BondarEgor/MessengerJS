@@ -1,8 +1,14 @@
-export class ChatsDto {
-  constructor(chat, isDeleted) {
-    this.status = isDeleted ? 'deleted' : 'active';
-    this.name = chat.name;
-    this.description = chat.description;
-    this.type = chat.type;
+import { chatStatusMapping } from './constants.mjs'
+
+function getChatStatus(status) {
+  return chatStatusMapping[status] || chatStatusMapping.default
+}
+
+export function chatsMapper({ name, description, type }, status) {
+  return {
+    status: getChatStatus(status),
+    name,
+    description,
+    type
   }
 }

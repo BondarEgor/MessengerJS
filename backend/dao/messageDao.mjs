@@ -3,13 +3,81 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { PATHS } from '../constants.js';
 import { v4 as uuid } from 'uuid';
-import { MessagesDto } from '../dto/messagesDto.mjs';
+import { messagesMapper } from '../dto/messagesDto.mjs';
+import { messageStatusMapping } from '../dto/constants.mjs';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
 
 export class MessagesDao {
   #filePath = path.join(_dirname, '../data', PATHS.messages);
+
+  async getMessagesByChatId(chatId) {
+    const messages = await this.#readMessages();
+
+    if (!(chatId in messages)) {
+      throw new Error('Chat with this id does not exist');
+    }
+
+    return Object.values(messages[chatId]).map(messagesMapper)
+  }
+
+  async getMessageByMessageId(chatId, messageId) {
+    const messages = await this.#readMessages();
+    const isMessageExist = await this.#doesMessageExist(chatId, messageId)
+
+    if (isMessageExist) {
+      throw new Error('Message with this id does not exist');
+    }
+
+    return messagesMapper(messages[chatId][messageId])
+  }
+
+  async updateMessageById(chatId, messageId, content) {
+    const messages = await this.#readMessages();
+    const isMessageExist = await this.#doesMessageExist(chatId, messageId)
+
+    if (isMessageExist) {
+      throw new Error('Message with this id does not exist');
+    }
+
+    messages[chatId][messageId] = {
+      ...messages[chatId][messageId],
+      content,
+    };
+
+    await this.#writeMessages(messages);
+
+    return userMapper(messages[chatId][messageId], 'update')
+  }
+
+  async deleteMessageById(chatId, messageId) {
+    const messages = await this.#readMessages();
+    const isMessageExist = await this.#doesMessageExist(chatId, messageId)
+
+    if (isMessageExist) {
+      throw new Error('Message with this id does not exist');
+    }
+
+    return messagesMapper(messages[chatId][messageId], messageStatusMapping.delete);
+  }
+
+  async createMessage(chatId, messageData) {
+    const messages = await this.#readMessages();
+
+    const messageId = uuid()
+    messages[chatId] = {
+      [messageId]: {
+        ...messageData,
+        timeStamp: new Date(),
+        id: messageId,
+      }
+    };
+
+    await this.#writeMessages(messages);
+
+    return messagesMapper(messages[chatId][messageId]);
+  }
 
   async #readMessages() {
     try {
@@ -37,76 +105,11 @@ export class MessagesDao {
     }
   }
 
-  async getMessagesByChatId(chatId) {
-    const messages = await this.#readMessages();
+  async #doesMessageExist(chatId, messageId) {
+    const messages = await this.#readMessages()
 
-    if (!messages[chatId]) {
-      throw new Error('Chat with this id does not exist');
+    if (!(chatId in messages) || !(messageId in messages[chatId])) {
+      throw new Error('Message with this id does not exist')
     }
-
-    return messages[chatId];
-  }
-
-  async getMessageById(chatId, messageId) {
-    const messages = await this.#readMessages();
-
-    if (!messages[chatId][messageId]) {
-      throw new Error('Message with this id does not exist');
-    }
-
-    return messages[chatId][messageId];
-  }
-
-  async updateMessageById(chatId, messageId, content) {
-    const messages = await this.#readMessages();
-
-    if (!messages[chatId][messageId]) {
-      throw new Error('Message with this id does not exist');
-    }
-
-    messages[chatId][messageId] = {
-      ...messages[chatId][messageId],
-      content,
-    };
-
-    await this.#writeMessages(messages);
-
-    return messages[chatId][messageId];
-  }
-
-  async deleteMessageById(chatId, messageId) {
-    const messages = await this.#readMessages();
-
-    if (!(chatId in messages)) {
-      throw new Error('Chat not found');
-    }
-
-    if (!(messageId in messages[chatId])) {
-      throw new Error('Message not found');
-    }
-
-    const currentMessage = messages[chatId][messageId];
-
-    return new MessagesDto(currentMessage, true);
-  }
-
-  async createMessage(chatId, messageData) {
-    const messages = await this.#readMessages();
-
-    if (!messages[chatId]) {
-      messages[chatId] = {};
-    }
-
-    const timeStamp = new Date();
-    const messageId = uuid();
-    messages[chatId][messageId] = {
-      ...messageData,
-      timeStamp,
-      id: messageId,
-    };
-
-    await this.#writeMessages(messages);
-
-    return messages[chatId][messageId];
   }
 }

@@ -30,8 +30,8 @@ export class ChatService {
     });
   }
 
-  async isDeleteAllowed(userId, chatId) {
-    return await this.chatDao.isDeleteAllowed(userId, chatId);
+  async canUserDeleteChat(userId, chatId) {
+    return await this.chatDao.canUserDeleteChat(userId, chatId);
   }
 
   async deleteChat(userId, chatId) {
@@ -52,8 +52,8 @@ export class ChatService {
     return updatedChat;
   }
 
-  async getChatById(userId, chatId) {
-    return await this.chatDao.getChatById(userId, chatId);
+  async getChatByChatId(userId, chatId) {
+    return await this.chatDao.getChatByChatId(userId, chatId);
   }
 
   async getAllChats() {

@@ -201,7 +201,7 @@ export function createChatController(app) {
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']
       );
-      const isChatDeleteAllowed = await chatService.isDeleteAllowed(
+      const isChatDeleteAllowed = await chatService.canUserDeleteChat(
         userId,
         chatId
       );
@@ -377,7 +377,7 @@ export function createChatController(app) {
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']
       );
-      const chatByChatId = await chatService.getChatById(userId, chatId);
+      const chatByChatId = await chatService.getChatByChatId(userId, chatId);
 
       return res.status(200).json(chatByChatId);
     } catch ({ message }) {

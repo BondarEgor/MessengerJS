@@ -14,8 +14,9 @@ export class MessagesDao {
 
   async getMessagesByChatId(chatId) {
     const messages = await this.#readMessages();
+    const doesChatExist = chatId in messages
 
-    if (!(chatId in messages)) {
+    if (!doesChatExist) {
       throw new Error('Chat with this id does not exist');
     }
 
@@ -24,9 +25,9 @@ export class MessagesDao {
 
   async getMessageByMessageId(chatId, messageId) {
     const messages = await this.#readMessages();
-    const isMessageExist = await this.#doesMessageExist(chatId, messageId);
+    const chatHasMessage = await this.#doesMessageExist(chatId, messageId);
 
-    if (isMessageExist) {
+    if (!chatHasMessage) {
       throw new Error('Message with this id does not exist');
     }
 
@@ -35,9 +36,9 @@ export class MessagesDao {
 
   async updateMessageById(chatId, messageId, content) {
     const messages = await this.#readMessages();
-    const isMessageExist = await this.#doesMessageExist(chatId, messageId);
+    const chatHasMessage = await this.#doesMessageExist(chatId, messageId);
 
-    if (isMessageExist) {
+    if (!chatHasMessage) {
       throw new Error('Message with this id does not exist');
     }
 
@@ -53,9 +54,9 @@ export class MessagesDao {
 
   async deleteMessageById(chatId, messageId) {
     const messages = await this.#readMessages();
-    const isMessageExist = await this.#doesMessageExist(chatId, messageId);
+    const chatHasMessage = await this.#doesMessageExist(chatId, messageId);
 
-    if (isMessageExist) {
+    if (!chatHasMessage) {
       throw new Error('Message with this id does not exist');
     }
 
@@ -110,9 +111,9 @@ export class MessagesDao {
 
   async #doesMessageExist(chatId, messageId) {
     const messages = await this.#readMessages();
-    const isMessageExist =
-      chatId in messages || !(messageId in messages[chatId]);
+    const doesChatExist = chatId in messages
+    const doesMessageExistInChat = messageId in messages[chatId]
 
-    return isMessageExist;
+    return doesChatExist && doesMessageExistInChat
   }
 }

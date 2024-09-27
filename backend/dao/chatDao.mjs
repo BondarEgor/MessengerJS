@@ -14,13 +14,14 @@ export class ChatDao {
   async createChat(userId, chatData) {
     const chats = await this.#readChats();
     const { name } = chatData;
+    const userHasChats = userId in chats
 
-    if (userId in chats) {
-      const isChatPresent = Object.values(chats[userId]).some(
+    if (userHasChats) {
+      const chatWithSameNameExists = Object.values(chats[userId]).some(
         (chat) => name === chat.name
       );
 
-      if (isChatPresent) {
+      if (chatWithSameNameExists) {
         throw new Error('Chat already exists');
       }
     }
@@ -41,19 +42,22 @@ export class ChatDao {
 
   async canUserDeleteChat(userId, chatId) {
     //Тут как будто нужно поменять название переменной, но пока сделал так
-    const isChatPresent = await this.doesChatExist(userId, chatId);
+    const chatAlreadyExists = await this.doesChatExist(userId, chatId);
 
-    return isChatPresent;
+    return chatAlreadyExists;
   }
 
   async deleteChatById(userId, chatId) {
     const chats = await this.#readChats();
+    const userHasChats = userId in chats;
 
-    if ((!userId) in chats) {
+    if (!userHasChats) {
       throw new Error(`No user with id ${userId} found`);
     }
 
-    if ((!chatId) in chats[userId]) {
+    const userHasChatWithId = chatId in chats[userId]
+
+    if (!userHasChatWithId) {
       throw new Error(`No chat with id ${chatId} found`);
     }
 
@@ -66,9 +70,9 @@ export class ChatDao {
     const chats = await this.#readChats();
 
     try {
-      const isChatPresent = await this.doesChatExist(userId, chatId);
+      const userHasChatWithId = await this.doesChatExist(userId, chatId);
 
-      if (isChatPresent) {
+      if (userHasChatWithId) {
         chats[chatId] = {
           ...chats[chatId],
           ...updateData,
@@ -86,9 +90,9 @@ export class ChatDao {
 
   async getChatByChatId(userId, chatId) {
     const chats = await this.#readChats();
-    const isChatPresent = await this.doesChatExist(userId, chatId);
+    const userHasChatWithId = await this.doesChatExist(userId, chatId);
 
-    if (!isChatPresent) {
+    if (!userHasChatWithId) {
       throw new Error('Chat not found');
     }
 
@@ -97,9 +101,9 @@ export class ChatDao {
 
   async getAllChats(userId) {
     const chats = await this.#readChats();
-    const isUserPresent = userId in chats;
+    const userHasChats = userId in chats;
 
-    return isUserPresent ? chats[userId] : null;
+    return userHasChats ? chats[userId] : null;
   }
 
   async #readChats() {
@@ -130,12 +134,11 @@ export class ChatDao {
 
   async doesChatExist(userId, chatIdentifier) {
     const chats = await this.#readChats();
-    const isChatPresent =
-      userId in chats &&
-      Object.values(chats[userId]).some((chat) =>
-        Object.values(chat).some((prop) => prop === chatIdentifier)
-      );
 
-    return isChatPresent;
+    if (!chats[userId]) {
+      return false;
+    }
+    //Тут оставил такой поиск, тк в 99% случаем нужно искать по ID, но при создании надо проверять есть ли с тем же именем чата, чтобы нельзя было дублировать
+    return Object.values(chats[userId]).some(({ name, chatId }) => name === chatIdentifier || chatId === chatIdentifier)
   }
 }

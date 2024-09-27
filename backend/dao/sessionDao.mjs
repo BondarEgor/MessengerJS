@@ -28,11 +28,11 @@ export class SessionDao {
   async generateSessionInfo(user) {
     const sessions = await this.#readSessions();
     const { userId } = user;
-    const existingSession = Object.values(sessions).find(
+    const userHasSession = Object.values(sessions).find(
       (session) => session.userId === userId
     );
 
-    if (existingSession) {
+    if (userHasSession) {
       return sessions[existingSession.token];
     }
 
@@ -62,9 +62,9 @@ export class SessionDao {
 
   async isTokenValid(token) {
     const sessions = await this.#readSessions();
-    const isTokenExist = token in sessions;
+    const doesSessionExist = token in sessions;
 
-    if (!isTokenExist) {
+    if (!doesSessionExist) {
       return false;
     }
 
@@ -92,8 +92,9 @@ export class SessionDao {
   async createSession(sessionData) {
     const sessions = await this.#readSessions();
     const { token } = sessionData;
+    const doesSessionExist = token in sessions
 
-    if (sessions[token]) {
+    if (doesSessionExist) {
       return sessions[token];
     }
 
@@ -116,7 +117,7 @@ export class SessionDao {
 
   async updateSession(token) {
     const sessions = await this.#readSessions();
-
+    //TODO:Порефакторить обновление сессии
     if (!(token in sessions)) {
       throw new Error('No token found');
     }
@@ -141,9 +142,9 @@ export class SessionDao {
 
   async getSessionByToken(token) {
     const sessions = await this.#readSessions();
-    const isSessionExist = token in sessions;
+    const doesSessionExist = token in sessions;
 
-    if (!isSessionExist) {
+    if (!doesSessionExist) {
       throw new Error('No session found');
     }
 

@@ -14,9 +14,9 @@ export class UserDao {
   async createUser(userData) {
     const users = (await this.#readUsers()) || {};
     const { email } = userData;
-    const isExists = await this.getUserByEmail(email);
+    const userAlreadyExists = await this.getUserByEmail(email);
 
-    if (isExists) {
+    if (userAlreadyExists) {
       throw new Error('User already exists');
     }
 
@@ -34,9 +34,9 @@ export class UserDao {
 
   async getUserById(userId) {
     const users = await this.#readUsers();
-    const isUserExists = await this.#isUserExists(userId);
-
-    if (!isUserExists) {
+    const userAlreadyExists = await this.#isUserExists(userId);
+    //TODO: Не нравится что везде проверяю есть ли юзер или нет, надо как-то вынести в отдельный метод
+    if (!userAlreadyExists) {
       throw new Error('User not found');
     }
 
@@ -51,9 +51,9 @@ export class UserDao {
 
   async deleteUserById(userId) {
     const users = await this.#readUsers();
-    const isUserExists = await this.#isUserExists(userId);
+    const userAlreadyExists = await this.#isUserExists(userId);
 
-    if (!isUserExists) {
+    if (!userAlreadyExists) {
       throw new Error(`User with id ${userId} not found`);
     }
 
@@ -62,9 +62,9 @@ export class UserDao {
 
   async updateUser(updateData, userId) {
     const users = await this.#readUsers();
-    const isUserExists = await this.#isUserExists(userId);
+    const userAlreadyExists = await this.#isUserExists(userId);
 
-    if (!isUserExists) {
+    if (!userAlreadyExists) {
       throw new Error(`User with ${userId} not found`);
     }
 

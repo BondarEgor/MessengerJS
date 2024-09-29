@@ -135,4 +135,15 @@ export class ChatDao {
 
     return userHasChats && userHasChatWithId;
   }
+
+  async getChatByIdentifier(userId, identifier) {
+    const chats = await this.#readChats()
+    const userHasChats = userId in chats
+
+    if (!userHasChats) {
+      throw new Error('User dont have any chats')
+    }
+
+    return Object.values(chats[userId]).some(({ chatId, name }) => chatId === identifier || name === identifier)
+  }
 }

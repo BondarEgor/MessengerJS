@@ -35,7 +35,7 @@ export class MessageService {
 
     this.eventEmitter.on(chatId, (messages) => {
       subscribers[chatId].forEach((sub) => {
-        sub.write(`data: ${JSON.stringify(messages)}`);
+        sub.write(`data: ${JSON.stringify(messages)}\n\n`);
       });
     });
   }

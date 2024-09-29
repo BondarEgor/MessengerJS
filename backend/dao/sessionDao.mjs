@@ -28,11 +28,11 @@ export class SessionDao {
   async generateSessionInfo(user) {
     const sessions = await this.#readSessions();
     const { userId } = user;
-    const userHasSession = Object.values(sessions).find(
+    const existingSession = Object.values(sessions).find(
       (session) => session.userId === userId
     );
 
-    if (userHasSession) {
+    if (existingSession) {
       return sessions[existingSession.token];
     }
 

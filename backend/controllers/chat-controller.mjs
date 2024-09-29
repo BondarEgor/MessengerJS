@@ -110,14 +110,17 @@ export function createChatController(app) {
   );
 
   app.get('/api/v1/chats-stream/', authMiddleware, async (req, res) => {
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive'
+    })
 
     try {
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']
       );
+
       chatService.createChatStream(userId, res);
     } catch (error) {
       console.error({ error: error.message });

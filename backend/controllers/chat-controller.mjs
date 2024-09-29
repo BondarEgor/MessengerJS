@@ -113,8 +113,8 @@ export function createChatController(app) {
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive'
-    })
+      Connection: 'keep-alive',
+    });
 
     try {
       const { userId } = await sessionService.getSessionByToken(

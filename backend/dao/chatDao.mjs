@@ -14,7 +14,7 @@ export class ChatDao {
   async createChat(userId, chatData) {
     const chats = await this.#readChats();
     const { name } = chatData;
-    const userHasChats = userId in chats
+    const userHasChats = userId in chats;
 
     if (userHasChats) {
       const chatWithSameNameExists = Object.values(chats[userId]).some(
@@ -55,7 +55,7 @@ export class ChatDao {
       throw new Error(`No user with id ${userId} found`);
     }
 
-    const userHasChatWithId = chatId in chats[userId]
+    const userHasChatWithId = chatId in chats[userId];
 
     if (!userHasChatWithId) {
       throw new Error(`No chat with id ${chatId} found`);
@@ -139,6 +139,8 @@ export class ChatDao {
       return false;
     }
     //Тут оставил такой поиск, тк в 99% случаем нужно искать по ID, но при создании надо проверять есть ли с тем же именем чата, чтобы нельзя было дублировать
-    return Object.values(chats[userId]).some(({ name, chatId }) => name === chatIdentifier || chatId === chatIdentifier)
+    return Object.values(chats[userId]).some(
+      ({ name, chatId }) => name === chatIdentifier || chatId === chatIdentifier
+    );
   }
 }

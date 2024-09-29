@@ -70,7 +70,7 @@ export class ChatService {
     if (!this.subscribers[userId]) {
       return;
     }
-    
+
     this.subscribers[userId].delete(res);
 
     if (isSubscribersEmpty) {
@@ -79,6 +79,6 @@ export class ChatService {
       delete this.subscribers[userId];
     }
 
-    res.end()
+    res.end();
   }
 }

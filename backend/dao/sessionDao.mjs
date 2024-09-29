@@ -92,7 +92,7 @@ export class SessionDao {
   async createSession(sessionData) {
     const sessions = await this.#readSessions();
     const { token } = sessionData;
-    const doesSessionExist = token in sessions
+    const doesSessionExist = token in sessions;
 
     if (doesSessionExist) {
       return sessions[token];

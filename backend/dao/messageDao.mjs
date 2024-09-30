@@ -14,9 +14,9 @@ export class MessagesDao {
 
   async getMessagesByChatId(chatId) {
     const messages = await this.#readMessages();
-    const doesChatExist = chatId in messages;
+    const chatExists = chatId in messages;
 
-    if (!doesChatExist) {
+    if (!chatExists) {
       throw new Error(`Chat with id: ${chatId} does not exist`);
     }
 
@@ -47,7 +47,11 @@ export class MessagesDao {
       content,
     };
 
-    await this.#writeMessages(messages);
+    const isWritten = await this.#writeMessages(messages);
+
+    if (!isWritten) {
+      throw new Error('Error while writting into a file');
+    }
 
     return userMapper(messages[chatId][messageId], 'update');
   }
@@ -86,7 +90,12 @@ export class MessagesDao {
       },
     };
 
-    await this.#writeMessages(messages);
+    //FIXME: Нужно ли тут таким образом проверять?
+    const isWritten = await this.#writeMessages(messages);
+
+    if (!isWritten) {
+      throw new Error('Error while writting into a file');
+    }
 
     return messagesMapper(messages[chatId][messageId]);
   }
@@ -119,9 +128,9 @@ export class MessagesDao {
 
   async #doesMessageExist(chatId, messageId) {
     const messages = await this.#readMessages();
-    const doesChatExist = chatId in messages;
+    const getChatByIdentifier = chatId in messages;
     const doesMessageExistInChat = messageId in messages[chatId];
 
-    return doesChatExist && doesMessageExistInChat;
+    return getChatByIdentifier && doesMessageExistInChat;
   }
 }

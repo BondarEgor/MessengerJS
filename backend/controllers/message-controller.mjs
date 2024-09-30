@@ -95,11 +95,11 @@ export function createMessageController(app) {
     async (req, res) => {
       const { chatId } = req.params;
 
-    try {
-      const { userId } = await sessionService.getSessionByToken(
-        req.headers['authorization']
-      )
-      const chat = await chatService.getChatByIdentifier(userId, chatId);
+      try {
+        const { userId } = await sessionService.getSessionByToken(
+          req.headers['authorization']
+        );
+        const chat = await chatService.getChatByIdentifier(userId, chatId);
 
         if (!chat) {
           return res.status(404).json({ error: 'Chat not found' });

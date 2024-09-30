@@ -28,11 +28,11 @@ export class SessionDao {
   async generateSessionInfo(user) {
     const sessions = await this.#readSessions();
     const { userId } = user;
-    const existingSession = Object.values(sessions).find(
+    const sessionExists = Object.values(sessions).find(
       (session) => session.userId === userId
     );
-
-    if (existingSession) {
+    //FIXME:Выглядит так, что потенциально тут будут баги, надо будет задачку на это
+    if (sessionExists) {
       return sessions[existingSession.token];
     }
 
@@ -52,12 +52,6 @@ export class SessionDao {
     const saltRounds = 10;
 
     return await bcrypt.hash(combinedValues, saltRounds);
-  }
-
-  async isUserIdValid(userId) {
-    const sessions = await this.#readSessions();
-
-    return Object.values(sessions).some((session) => session.userId === userId);
   }
 
   async isTokenValid(token) {

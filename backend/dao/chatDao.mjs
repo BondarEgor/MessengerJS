@@ -45,39 +45,27 @@ export class ChatDao {
 
   async deleteChatById(userId, chatId) {
     const chats = await this.#readChats();
-    const userHasChats = userId in chats;
+    const chatExists = await this.getChatByIdentifier(userId, chatId);
 
-    if (!userHasChats) {
-      throw new Error(`No user with id ${userId} found`);
+    if (!chatExists) {
+      throw new Error('Chat does not exist');
     }
 
-    const userHasChatWithId = chatId in chats[userId];
-
-    if (!userHasChatWithId) {
-      throw new Error(`No chat with id ${chatId} found`);
-    }
-
-    const currChat = chats[userId][chatId];
-
-    return chatsMapper(currChat, 'delete');
+    return chatsMapper(chats[userId][chatId], 'delete');
   }
 
   async updateChat(userId, chatId, updateData) {
     const chats = await this.#readChats();
+    const userHasChatWithId = await this.getChatByIdentifier(userId, chatId);
 
-    try {
-      const userHasChatWithId = await this.doesChatExist(userId, chatId);
-
-      if (userHasChatWithId) {
-        chats[chatId] = {
-          ...chats[chatId],
-          ...updateData,
-        };
-      }
-    } catch (error) {
-      console.error(error);
+    if (!userHasChatWithId) {
       throw new Error('Chat not found');
     }
+
+    chats[chatId] = {
+      ...chats[chatId],
+      ...updateData,
+    };
 
     await this.#writeChats(chats);
 
@@ -86,7 +74,7 @@ export class ChatDao {
 
   async getChatByChatId(userId, chatId) {
     const chats = await this.#readChats();
-    const userHasChatWithId = await this.doesChatExist(userId, chatId);
+    const userHasChatWithId = await this.getChatByIdentifier(userId, chatId);
 
     if (!userHasChatWithId) {
       throw new Error('Chat not found');
@@ -137,13 +125,15 @@ export class ChatDao {
   }
 
   async getChatByIdentifier(userId, identifier) {
-    const chats = await this.#readChats()
-    const userHasChats = userId in chats
+    const chats = await this.#readChats();
+    const userHasChats = userId in chats;
 
     if (!userHasChats) {
-      throw new Error('User dont have any chats')
+      throw new Error('User dont have any chats');
     }
 
-    return Object.values(chats[userId]).some(({ chatId, name }) => chatId === identifier || name === identifier)
+    return Object.values(chats[userId]).some(
+      ({ chatId, name }) => chatId === identifier || name === identifier
+    );
   }
 }

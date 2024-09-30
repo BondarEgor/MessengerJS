@@ -35,7 +35,7 @@ export class UserDao {
   async getUserById(userId) {
     const users = await this.#readUsers();
     const userAlreadyExists = await this.#isUserExists(userId);
-    //TODO: Не нравится что везде проверяю есть ли юзер или нет, надо как-то вынести в отдельный метод
+
     if (!userAlreadyExists) {
       throw new Error('User not found');
     }

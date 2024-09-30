@@ -117,7 +117,9 @@ export class SessionDao {
 
   async updateSession(token) {
     const sessions = await this.#readSessions();
-    //TODO:Порефакторить обновление сессии
+    /*TODO:Порефакторить обновление сессии
+     * https://github.com/users/BondarEgor/projects/1?pane=issue&itemId=81300820
+     */
     if (!(token in sessions)) {
       throw new Error('No token found');
     }

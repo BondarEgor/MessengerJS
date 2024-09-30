@@ -41,10 +41,9 @@ export class ChatDao {
   }
 
   async canUserDeleteChat(userId, chatId) {
-    //Тут как будто нужно поменять название переменной, но пока сделал так
-    const chatAlreadyExists = await this.doesChatExist(userId, chatId);
+    const userHasExactChat = await this.doesChatExist(userId, chatId);
 
-    return chatAlreadyExists;
+    return userHasExactChat;
   }
 
   async deleteChatById(userId, chatId) {
@@ -132,15 +131,11 @@ export class ChatDao {
     }
   }
 
-  async doesChatExist(userId, chatIdentifier) {
+  async doesChatExist(userId, chatId) {
     const chats = await this.#readChats();
+    const userHasChats = userId in chats;
+    const userHasChatWithId = chatId in chats[userId];
 
-    if (!chats[userId]) {
-      return false;
-    }
-    //Тут оставил такой поиск, тк в 99% случаем нужно искать по ID, но при создании надо проверять есть ли с тем же именем чата, чтобы нельзя было дублировать
-    return Object.values(chats[userId]).some(
-      ({ name, chatId }) => name === chatIdentifier || chatId === chatIdentifier
-    );
+    return userHasChats && userHasChatWithId;
   }
 }

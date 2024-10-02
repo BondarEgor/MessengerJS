@@ -10,19 +10,19 @@ const _dirname = path.dirname(_filename);
 export class SessionDao {
   #filePath = path.join(_dirname, '../data', PATHS.sessions);
 
-  async #readSessions() {
-    try {
-      const data = await fs.readFile(this.#filePath, 'utf-8');
+  async createSession(sessionData) {
+    const sessions = await this.#readSessions();
+    const { token } = sessionData;
+    const sessionHasToken = token in sessions;
 
-      return JSON.parse(data);
-    } catch (error) {
-      const directoryPath = path.dirname(this.#filePath);
-
-      await fs.mkdir(directoryPath, { recursive: true });
-      await fs.writeFile(this.#filePath, JSON.stringify({}));
-
-      throw error;
+    if (sessionHasToken) {
+      return sessions[token];
     }
+
+    sessions[token] = sessionData;
+    await this.#writeSessions(sessions);
+
+    return sessions[token];
   }
 
   async generateSessionInfo(user) {
@@ -89,32 +89,6 @@ export class SessionDao {
     return expirationTime > currentTime;
   }
 
-  async createSession(sessionData) {
-    const sessions = await this.#readSessions();
-    const { token } = sessionData;
-    const doesSessionExist = token in sessions;
-
-    if (doesSessionExist) {
-      return sessions[token];
-    }
-
-    sessions[token] = sessionData;
-    await this.#writeSessions(sessions);
-
-    return sessions[token];
-  }
-
-  async #writeSessions(sessions) {
-    try {
-      await fs.writeFile(this.#filePath, JSON.stringify(sessions, null, 2));
-
-      return true;
-    } catch (e) {
-      console.error(e);
-      return false;
-    }
-  }
-
   async updateSession(token) {
     const sessions = await this.#readSessions();
     /*TODO:Порефакторить обновление сессии
@@ -159,5 +133,31 @@ export class SessionDao {
     await this.#writeSessions(sessions);
 
     return deletedSession;
+  }
+
+  async #readSessions() {
+    try {
+      const data = await fs.readFile(this.#filePath, 'utf-8');
+
+      return JSON.parse(data);
+    } catch (error) {
+      const directoryPath = path.dirname(this.#filePath);
+
+      await fs.mkdir(directoryPath, { recursive: true });
+      await fs.writeFile(this.#filePath, JSON.stringify({}));
+
+      throw error;
+    }
+  }
+
+  async #writeSessions(sessions) {
+    try {
+      await fs.writeFile(this.#filePath, JSON.stringify(sessions, null, 2));
+
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
   }
 }

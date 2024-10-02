@@ -17,7 +17,7 @@ export class MessagesDao {
     const doesChatExist = chatId in messages;
 
     if (!doesChatExist) {
-      throw new Error('Chat with this id does not exist');
+      throw new Error(`Chat with id: ${chatId} does not exist`);
     }
 
     return Object.values(messages[chatId]).map(messagesMapper);
@@ -70,7 +70,15 @@ export class MessagesDao {
     const messages = await this.#readMessages();
 
     const messageId = uuid();
+    /*Такая обработка поможет избежать дублирования идентификаторов сообщений
+     * И если юзер поймает ошибку, то при повторном создании сообщения будет сгенерен новый id
+     */
+    if (messageId in messages[chatId]) {
+      throw new Error(`Message with id: ${messageId} already exists`);
+    }
+
     messages[chatId] = {
+      ...messages[chatId],
       [messageId]: {
         ...messageData,
         timeStamp: new Date(),

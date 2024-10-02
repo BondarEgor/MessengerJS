@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuid } from 'uuid';
 import { PATHS } from '../constants.js';
 import { userMapper } from '../dto/usersDto.mjs';
 
@@ -14,13 +14,14 @@ export class UserDao {
   async createUser(userData) {
     const users = (await this.#readUsers()) || {};
     const { email } = userData;
+    //Здесь мы хотим проверить по почте, тк почта - уникальное поле
     const userAlreadyExists = await this.getUserByEmail(email);
 
     if (userAlreadyExists) {
       throw new Error('User already exists');
     }
 
-    const userId = uuidv4();
+    const userId = uuid();
     users[userId] = { ...userData, userId };
 
     return this.#writeUsers(users);

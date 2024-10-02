@@ -13,20 +13,17 @@ export class ChatDao {
 
   async createChat(userId, chatData) {
     const chats = await this.#readChats();
-    const { name } = chatData;
-    const userHasChats = userId in chats;
 
-    if (userHasChats) {
-      const chatWithSameNameExists = Object.values(chats[userId]).some(
-        (chat) => name === chat.name
-      );
-
-      if (chatWithSameNameExists) {
-        throw new Error('Chat already exists');
-      }
+    if (!(userId in chats)) {
+      chats[userId] = {};
     }
 
     const chatId = uuid();
+
+    if (!(chatId in chats[userId])) {
+      throw new Error(`Chat with id ${chatId} exists`);
+    }
+
     chats[userId] = {
       ...chats[userId],
       [chatId]: {

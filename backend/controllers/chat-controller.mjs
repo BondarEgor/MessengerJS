@@ -83,36 +83,44 @@ export function createChatController(app) {
    *         description: Internal server error
    */
 
-  app.post('/api/v1/chats', typeDescNameValidator, authMiddleware, async (req, res) => {
-    try {
-      const { userId } = await sessionService.getSessionByToken(
-        req.headers['authorization']
-      );
+  app.post(
+    '/api/v1/chats',
+    typeDescNameValidator,
+    authMiddleware,
+    async (req, res) => {
+      try {
+        const { userId } = await sessionService.getSessionByToken(
+          req.headers['authorization']
+        );
 
-      const newChat = await chatService.createChat(userId, req.body);
+        const newChat = await chatService.createChat(userId, req.body);
 
-      if (!newChat) {
-        res.status(400).json({ error: 'Error while creating chat' });
+        if (!newChat) {
+          res.status(400).json({ error: 'Error while creating chat' });
+        }
+
+        res
+          .status(201)
+          .json({ message: 'Chat successfully created', chat: newChat });
+      } catch (e) {
+        console.error(e);
+        res.status(400).json({ error: e.message });
       }
-
-      res
-        .status(201)
-        .json({ message: 'Chat successfully created', chat: newChat });
-    } catch (e) {
-      console.error(e);
-      res.status(400).json({ error: e.message });
     }
-  });
+  );
 
   app.get('/api/v1/chats-stream/', authMiddleware, async (req, res) => {
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    });
 
     try {
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']
       );
+
       chatService.createChatStream(userId, res);
     } catch (error) {
       console.error({ error: error.message });
@@ -201,7 +209,7 @@ export function createChatController(app) {
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']
       );
-      const isChatDeleteAllowed = await chatService.isDeleteAllowed(
+      const isChatDeleteAllowed = await chatService.canUserDeleteChat(
         userId,
         chatId
       );
@@ -377,7 +385,7 @@ export function createChatController(app) {
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']
       );
-      const chatByChatId = await chatService.getChatById(userId, chatId);
+      const chatByChatId = await chatService.getChatByChatId(userId, chatId);
 
       return res.status(200).json(chatByChatId);
     } catch ({ message }) {

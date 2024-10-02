@@ -117,20 +117,25 @@ export function createUsersController(app) {
    *         description: Внутренняя ошибка сервера
    */
 
-  app.put('/api/v1/users/', usernamePasswordValidator, authMiddleware, async (req, res) => {
-    try {
-      const { userId } = await sessionService.getSessionByToken(
-        req.headers['authorization']
-      );
+  app.put(
+    '/api/v1/users/',
+    usernamePasswordValidator,
+    authMiddleware,
+    async (req, res) => {
+      try {
+        const { userId } = await sessionService.getSessionByToken(
+          req.headers['authorization']
+        );
 
-      const updatedUserInfo = await userService.updateUser(req.body, userId);
+        const updatedUserInfo = await userService.updateUser(req.body, userId);
 
-      return res.status(200).json(updatedUserInfo);
-    } catch (e) {
-      console.error(`Faced error updating user: ${e}`);
-      return res.status(500).json({ message: e.message });
+        return res.status(200).json(updatedUserInfo);
+      } catch (e) {
+        console.error(`Faced error updating user: ${e}`);
+        return res.status(500).json({ message: e.message });
+      }
     }
-  });
+  );
 
   /**
    * @swagger

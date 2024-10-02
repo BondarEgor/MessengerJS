@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt, { hash } from 'bcrypt';
 import { SERVICES } from '../di/api.mjs';
 import { diContainer } from '../di/di.mjs';
 

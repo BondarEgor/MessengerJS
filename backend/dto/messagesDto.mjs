@@ -1,9 +1,15 @@
-export class MessagesDto {
-  constructor(message, isDeleted = false) {
-    this.author = message.author;
-    this.content = message.content;
-    this.timeStamp = message.timeStamp;
-    this.id = message.id;
-    this.status = isDeleted ? 'deleted' : 'active';
-  }
+import { messageStatusMapping } from './constants.mjs';
+
+function getMessageStatus(status) {
+  return messageStatusMapping[status] || messageStatusMapping.default;
+}
+
+export function messagesMapper({ content, timeStamp, author, id }, status) {
+  return {
+    content,
+    timeStamp,
+    id,
+    author,
+    status: getMessageStatus(status),
+  };
 }

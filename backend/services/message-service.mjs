@@ -5,11 +5,18 @@ import EventEmitter from 'node:events';
 export class MessageService {
   constructor() {
     this.messagesDao = diContainer.resolve(SERVICES.messagesDao);
+    this.chatsDao = diContainer.resolve(SERVICES.chatsDao);
     this.eventEmitter = new EventEmitter();
     this.subscribers = {};
   }
 
-  async createMessage(chatId, messageData) {
+  async createMessage(userId, chatId, messageData) {
+    const isChatExist = this.chatsDao.doesChatExist(userId, chatId);
+
+    if (!isChatExist) {
+      throw new Error('Chat not found');
+    }
+
     const newMessage = await this.messagesDao.createMessage(
       chatId,
       messageData
@@ -28,7 +35,7 @@ export class MessageService {
 
     this.eventEmitter.on(chatId, (messages) => {
       subscribers[chatId].forEach((sub) => {
-        sub.write(`data: ${JSON.stringify(messages)}`);
+        sub.write(`data: ${JSON.stringify(messages)}\n\n`);
       });
     });
   }
@@ -37,8 +44,8 @@ export class MessageService {
     return await messagesDao.getMessagesByChatId(chatId);
   }
 
-  async getMessageById(chatId, messageId) {
-    return await messagesDao.getMessageById(chatId, messageId);
+  async getMessageByMessageId(chatId, messageId) {
+    return await messagesDao.getMessageByMessageId(chatId, messageId);
   }
 
   async updateMessageById(chatId, messageId, content) {
@@ -52,7 +59,7 @@ export class MessageService {
     return updatedMessage;
   }
 
-  async notifyAll(chatId, data) {
+  notifyAll(chatId, data) {
     this.eventEmitter.emit(chatId, data);
   }
 

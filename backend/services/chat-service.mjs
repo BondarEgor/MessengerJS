@@ -24,14 +24,14 @@ export class ChatService {
     this.subscribers[userId].add(res);
 
     this.eventEmitter.on(userId, (chats) => {
-      subscribers[userId].forEach((sub) => {
-        sub.write(chats);
+      this.subscribers[userId].forEach((sub) => {
+        sub.write(`data: ${JSON.stringify(chats)}\n\n`);
       });
     });
   }
 
-  async isDeleteAllowed(userId, chatId) {
-    return await this.chatDao.isDeleteAllowed(userId, chatId);
+  async canUserDeleteChat(userId, chatId) {
+    return await this.chatDao.canUserDeleteChat(userId, chatId);
   }
 
   async deleteChat(userId, chatId) {
@@ -52,8 +52,8 @@ export class ChatService {
     return updatedChat;
   }
 
-  async getChatById(userId, chatId) {
-    return await this.chatDao.getChatById(userId, chatId);
+  async getChatByChatId(userId, chatId) {
+    return await this.chatDao.getChatByChatId(userId, chatId);
   }
 
   async getAllChats() {
@@ -70,12 +70,15 @@ export class ChatService {
     if (!this.subscribers[userId]) {
       return;
     }
-    this.subscribers[userId] = this.subscribers[userId].delete(res);
+
+    this.subscribers[userId].delete(res);
 
     if (isSubscribersEmpty) {
       this.eventEmitter.removeAllListeners(userId);
 
       delete this.subscribers[userId];
     }
+
+    res.end();
   }
 }

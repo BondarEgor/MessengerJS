@@ -10,19 +10,19 @@ const _dirname = path.dirname(_filename);
 export class SessionDao {
   #filePath = path.join(_dirname, '../data', PATHS.sessions);
 
-  async #readSessions() {
-    try {
-      const data = await fs.readFile(this.#filePath, 'utf-8');
+  async createSession(sessionData) {
+    const sessions = await this.#readSessions();
+    const { token } = sessionData;
+    const sessionHasToken = token in sessions;
 
-      return JSON.parse(data);
-    } catch (error) {
-      const directoryPath = path.dirname(this.#filePath);
-
-      await fs.mkdir(directoryPath, { recursive: true });
-      await fs.writeFile(this.#filePath, JSON.stringify({}));
-
-      throw error;
+    if (sessionHasToken) {
+      return sessions[token];
     }
+
+    sessions[token] = sessionData;
+    await this.#writeSessions(sessions);
+
+    return sessions[token];
   }
 
   async generateSessionInfo(user) {
@@ -62,13 +62,13 @@ export class SessionDao {
 
   async isTokenValid(token) {
     const sessions = await this.#readSessions();
-    const isTokenExist = token in sessions;
+    const doesSessionExist = token in sessions;
 
-    if (!isTokenExist) {
-      throw new Error('Token does not exist');
+    if (!doesSessionExist) {
+      return false;
     }
 
-    const isTokenExpired = this.isTokenFresh(token);
+    const isTokenExpired = this.isExpired(token);
 
     if (isTokenExpired) {
       const { refreshToken } = await this.getSessionByToken(token);
@@ -76,51 +76,26 @@ export class SessionDao {
       if (!refreshToken) {
         throw new Error('No refresh token');
       }
-    }
 
-    return await this.updateSession(userId, token);
-  }
-
-  isTokenFresh({ expirationTime }) {
-    const currentTime = new Date().getTime();
-
-    if (expirationTime < currentTime) {
-      throw new Error('Token is expired');
+      return await this.updateSession(token);
     }
 
     return true;
   }
 
-  async createSession(sessionData) {
-    const sessions = await this.#readSessions();
-    const { token } = sessionData;
+  isExpired({ expirationTime }) {
+    const currentTime = new Date().getTime();
 
-    if (sessions[token]) {
-      return sessions[token];
-    }
-
-    sessions[token] = sessionData;
-    await this.#writeSessions(sessions);
-
-    return sessions[token];
-  }
-
-  async #writeSessions(sessions) {
-    try {
-      await fs.writeFile(this.#filePath, JSON.stringify(sessions, null, 2));
-
-      return true;
-    } catch (e) {
-      console.error(e);
-      return false;
-    }
+    return expirationTime > currentTime;
   }
 
   async updateSession(token) {
     const sessions = await this.#readSessions();
-
+    /*TODO:Порефакторить обновление сессии
+     * https://github.com/users/BondarEgor/projects/1?pane=issue&itemId=81300820
+     */
     if (!(token in sessions)) {
-      throw new Error('User not registered');
+      throw new Error('No token found');
     }
 
     const sessionInfo = sessions[token];
@@ -143,9 +118,9 @@ export class SessionDao {
 
   async getSessionByToken(token) {
     const sessions = await this.#readSessions();
-    const isSessionExist = token in sessions;
+    const doesSessionExist = token in sessions;
 
-    if (!isSessionExist) {
+    if (!doesSessionExist) {
       throw new Error('No session found');
     }
 
@@ -158,5 +133,31 @@ export class SessionDao {
     await this.#writeSessions(sessions);
 
     return deletedSession;
+  }
+
+  async #readSessions() {
+    try {
+      const data = await fs.readFile(this.#filePath, 'utf-8');
+
+      return JSON.parse(data);
+    } catch (error) {
+      const directoryPath = path.dirname(this.#filePath);
+
+      await fs.mkdir(directoryPath, { recursive: true });
+      await fs.writeFile(this.#filePath, JSON.stringify({}));
+
+      throw error;
+    }
+  }
+
+  async #writeSessions(sessions) {
+    try {
+      await fs.writeFile(this.#filePath, JSON.stringify(sessions, null, 2));
+
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
   }
 }

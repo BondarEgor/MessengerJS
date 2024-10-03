@@ -385,7 +385,7 @@ export function createChatController(app) {
       const { userId } = await sessionService.getSessionByToken(
         req.headers['authorization']
       );
-      const chatByChatId = await chatService.getChatByIdentifier(
+      const chatByChatId = await chatService.getChatById(
         userId,
         chatId
       );

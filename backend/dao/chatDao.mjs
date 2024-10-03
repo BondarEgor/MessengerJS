@@ -13,14 +13,16 @@ export class ChatDao {
 
   async createChat(userId, chatData) {
     const chats = await this.#readChats();
+    const userHasChats = userId in chats
 
-    if (!(userId in chats)) {
+    if (!userHasChats) {
       chats[userId] = {};
     }
 
     const chatId = uuid();
+    const isChatWithSameId = chatId in chats[userId]
 
-    if (!(chatId in chats[userId])) {
+    if (isChatWithSameId) {
       throw new Error(`Chat with id ${chatId} exists`);
     }
 
@@ -38,16 +40,14 @@ export class ChatDao {
   }
 
   async canUserDeleteChat(userId, chatId) {
-    const userHasExactChat = await this.doesChatExist(userId, chatId);
-
-    return userHasExactChat;
+    return await this.doesChatExist(userId, chatId);
   }
 
   async deleteChatById(userId, chatId) {
     const chats = await this.#readChats();
-    const chatExists = await this.getChatByIdentifier(userId, chatId);
+    const isChatExisting = await this.doesChatExist(userId, chatId);
 
-    if (!chatExists) {
+    if (!isChatExisting) {
       throw new Error('Chat does not exist');
     }
 
@@ -56,9 +56,9 @@ export class ChatDao {
 
   async updateChat(userId, chatId, updateData) {
     const chats = await this.#readChats();
-    const userHasChatWithId = await this.getChatByIdentifier(userId, chatId);
+    const isChatExisting = await this.doesChatExist(userId, chatId);
 
-    if (!userHasChatWithId) {
+    if (!isChatExisting) {
       throw new Error('Chat not found');
     }
 
@@ -74,9 +74,9 @@ export class ChatDao {
 
   async getChatByChatId(userId, chatId) {
     const chats = await this.#readChats();
-    const userHasChatWithId = await this.getChatByIdentifier(userId, chatId);
+    const isChatExisting = await this.doesChatExist(userId, chatId);
 
-    if (!userHasChatWithId) {
+    if (!isChatExisting) {
       throw new Error('Chat not found');
     }
 
@@ -87,7 +87,7 @@ export class ChatDao {
     const chats = await this.#readChats();
     const userHasChats = userId in chats;
 
-    return userHasChats ? chats[userId] : null;
+    return userHasChats ? Object.values(chats[userId]).map(chatsMapper) : null;
   }
 
   async #readChats() {
@@ -122,18 +122,5 @@ export class ChatDao {
     const userHasChatWithId = chatId in chats[userId];
 
     return userHasChats && userHasChatWithId;
-  }
-
-  async getChatByIdentifier(userId, identifier) {
-    const chats = await this.#readChats();
-    const userHasChats = userId in chats;
-
-    if (!userHasChats) {
-      throw new Error('User dont have any chats');
-    }
-
-    return Object.values(chats[userId]).some(
-      ({ chatId, name }) => chatId === identifier || name === identifier
-    );
   }
 }

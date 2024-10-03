@@ -99,7 +99,7 @@ export function createMessageController(app) {
         const { userId } = await sessionService.getSessionByToken(
           req.headers['authorization']
         );
-        const chat = await chatService.getChatByIdentifier(userId, chatId);
+        const chat = await chatService.getChatById(userId, chatId);
 
         if (!chat) {
           return res.status(404).json({ error: 'Chat not found' });

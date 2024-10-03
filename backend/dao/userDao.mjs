@@ -35,24 +35,19 @@ export class UserDao {
 
   async getUserById(userId) {
     const users = await this.#readUsers();
-    const userAlreadyExists = await this.#isUserExists(userId);
 
-    if (!userAlreadyExists) {
-      throw new Error('User not found');
-    }
-
-    return userMapper(users[userId]);
+    return userMapper(users[userId]) ?? null
   }
 
   async getAllUsers() {
-    const users = (await this.#readUsers()) || {};
+    const users = await this.#readUsers()
 
     return Object.values(users).map(userMapper);
   }
 
   async deleteUserById(userId) {
     const users = await this.#readUsers();
-    const userAlreadyExists = await this.#isUserExists(userId);
+    const userAlreadyExists = await this.#doesUserExist(userId);
 
     if (!userAlreadyExists) {
       throw new Error(`User with id ${userId} not found`);
@@ -63,7 +58,7 @@ export class UserDao {
 
   async updateUser(updateData, userId) {
     const users = await this.#readUsers();
-    const userAlreadyExists = await this.#isUserExists(userId);
+    const userAlreadyExists = await this.#doesUserExist(userId);
 
     if (!userAlreadyExists) {
       throw new Error(`User with ${userId} not found`);
@@ -101,7 +96,7 @@ export class UserDao {
     }
   }
 
-  async #isUserExists(userId) {
+  async #doesUserExist(userId) {
     const users = await this.#readUsers();
 
     return Object.values(users).some((user) => user.userId === userId);

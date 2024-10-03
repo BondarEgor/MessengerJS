@@ -31,7 +31,7 @@ export class SessionDao {
     const sessionExists = Object.values(sessions).find(
       (session) => session.userId === userId
     );
-    //FIXME:Выглядит так, что потенциально тут будут баги, надо будет задачку на это
+
     if (sessionExists) {
       return sessions[existingSession.token];
     }

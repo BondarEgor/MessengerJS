@@ -11,7 +11,7 @@ export class MessageService {
   }
 
   async createMessage(userId, chatId, messageData) {
-    const isChatExist = this.chatsDao.getChatByIdentifier(userId, chatId);
+    const isChatExist = this.chatsDao.getChatById(userId, chatId);
 
     if (!isChatExist) {
       throw new Error('Chat not found');

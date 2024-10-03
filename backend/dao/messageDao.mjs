@@ -14,9 +14,9 @@ export class MessagesDao {
 
   async getMessagesByChatId(chatId) {
     const messages = await this.#readMessages();
-    const chatExists = chatId in messages;
+    const isChatExisting = chatId in messages;
 
-    if (!chatExists) {
+    if (!isChatExisting) {
       throw new Error(`Chat with id: ${chatId} does not exist`);
     }
 
@@ -128,9 +128,9 @@ export class MessagesDao {
 
   async #doesMessageExist(chatId, messageId) {
     const messages = await this.#readMessages();
-    const getChatByIdentifier = chatId in messages;
+    const isChatExisting = chatId in messages;
     const doesMessageExistInChat = messageId in messages[chatId];
 
-    return getChatByIdentifier && doesMessageExistInChat;
+    return isChatExisting && doesMessageExistInChat;
   }
 }

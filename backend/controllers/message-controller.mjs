@@ -105,11 +105,7 @@ export function createMessageController(app) {
           return res.status(404).json({ error: 'Chat not found' });
         }
 
-        const newMessage = await messageService.createMessage(
-          userId,
-          chatId,
-          req.body
-        );
+        const newMessage = await messageService.createMessage(chatId, req.body);
         return res.status(201).json(newMessage);
       } catch (error) {
         console.error(error);

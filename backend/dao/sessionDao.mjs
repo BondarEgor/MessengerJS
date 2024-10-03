@@ -28,12 +28,12 @@ export class SessionDao {
   async generateSessionInfo(user) {
     const sessions = await this.#readSessions();
     const { userId } = user;
-    const sessionExists = Object.values(sessions).find(
+    const session = Object.values(sessions).find(
       (session) => session.userId === userId
     );
 
-    if (sessionExists) {
-      return sessions[existingSession.token];
+    if (session) {
+      return sessions[session.token];
     }
 
     const token = await this.generateToken(user);

@@ -13,14 +13,14 @@ export class ChatDao {
 
   async createChat(userId, chatData) {
     const chats = await this.#readChats();
-    const userHasChats = userId in chats
+    const userHasChats = userId in chats;
 
     if (!userHasChats) {
       chats[userId] = {};
     }
 
     const chatId = uuid();
-    const isChatWithSameId = chatId in chats[userId]
+    const isChatWithSameId = chatId in chats[userId];
 
     if (isChatWithSameId) {
       throw new Error(`Chat with id ${chatId} exists`);

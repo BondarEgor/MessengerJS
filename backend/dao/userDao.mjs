@@ -36,11 +36,11 @@ export class UserDao {
   async getUserById(userId) {
     const users = await this.#readUsers();
 
-    return userMapper(users[userId]) ?? null
+    return userMapper(users[userId]) ?? null;
   }
 
   async getAllUsers() {
-    const users = await this.#readUsers()
+    const users = await this.#readUsers();
 
     return Object.values(users).map(userMapper);
   }

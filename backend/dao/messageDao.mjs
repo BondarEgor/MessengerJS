@@ -72,24 +72,24 @@ export class MessagesDao {
 
   async createMessage(chatId, messageData) {
     const messages = await this.#readMessages();
-
     const messageId = uuid();
     /*Такая обработка поможет избежать дублирования идентификаторов сообщений
      * И если юзер поймает ошибку, то при повторном создании сообщения будет сгенерен новый id
      */
-    if (messageId in messages[chatId]) {
+    const messageWithSameId = Object.values(messages).some(
+      (message) => message.messageId === messageId
+    );
+
+    if (messageWithSameId) {
       throw new Error(`Message with id: ${messageId} already exists`);
     }
-
-    messages[chatId] = {
-      ...messages[chatId],
-      [messageId]: {
-        ...messageData,
-        timeStamp: new Date(),
-        id: messageId,
-      },
+    const newMessage = {
+      ...messageData,
+      timeStamp: new Date(),
+      messageId,
     };
 
+    messages[chatId] = [...messages[chatId], newMessage];
     //FIXME: Нужно ли тут таким образом проверять?
     const isWritten = await this.#writeMessages(messages);
 
@@ -97,7 +97,7 @@ export class MessagesDao {
       throw new Error('Error while writting into a file');
     }
 
-    return messagesMapper(messages[chatId][messageId]);
+    return messagesMapper(newMessage);
   }
 
   async #readMessages() {

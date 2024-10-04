@@ -90,7 +90,6 @@ export class MessagesDao {
     };
 
     messages[chatId] = [...messages[chatId], newMessage];
-    //FIXME: Нужно ли тут таким образом проверять?
     const isWritten = await this.#writeMessages(messages);
 
     if (!isWritten) {

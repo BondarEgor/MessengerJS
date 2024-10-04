@@ -34,7 +34,11 @@ export class ChatDao {
       },
     };
 
-    await this.#writeChats(chats);
+    const isWritten = await this.#writeChats(chats);
+
+    if (!isWritten) {
+      throw new Error('Failed to write chats');
+    }
 
     return chatsMapper(chats[userId][chatId]);
   }
@@ -67,7 +71,11 @@ export class ChatDao {
       ...updateData,
     };
 
-    await this.#writeChats(chats);
+    const isWritten = await this.#writeChats(chats);
+
+    if (!isWritten) {
+      throw new Error('Failed to write chats');
+    }
 
     return chatsMapper(currChat, 'update');
   }

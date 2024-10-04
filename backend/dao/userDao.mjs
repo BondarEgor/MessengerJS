@@ -23,8 +23,13 @@ export class UserDao {
 
     const userId = uuid();
     users[userId] = { ...userData, userId };
+    const isWritten = await this.#writeUsers(users);
 
-    return this.#writeUsers(users);
+    if (!isWritten) {
+      throw new Error('Failed to write users');
+    }
+
+    return userMapper(users[userId]);
   }
 
   async getUserByEmail(userEmail) {
@@ -65,7 +70,11 @@ export class UserDao {
     }
 
     users[userId] = { ...users[userId], ...updateData };
-    await this.#writeUsers(users);
+    const isWritten = await this.#writeUsers(users);
+
+    if (!isWritten) {
+      throw new Error('Failed to write users');
+    }
 
     return userMapper(users[userId]);
   }

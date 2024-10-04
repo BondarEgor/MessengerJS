@@ -13,14 +13,16 @@ export class ChatDao {
 
   async createChat(userId, chatData) {
     const chats = await this.#readChats();
+    const userHasChats = userId in chats;
 
-    if (!(userId in chats)) {
+    if (!userHasChats) {
       chats[userId] = {};
     }
 
     const chatId = uuid();
+    const isChatWithSameId = chatId in chats[userId];
 
-    if (!(chatId in chats[userId])) {
+    if (isChatWithSameId) {
       throw new Error(`Chat with id ${chatId} exists`);
     }
 
@@ -32,63 +34,57 @@ export class ChatDao {
       },
     };
 
-    await this.#writeChats(chats);
+    const isWritten = await this.#writeChats(chats);
+
+    if (!isWritten) {
+      throw new Error('Failed to write chats');
+    }
 
     return chatsMapper(chats[userId][chatId]);
   }
 
   async canUserDeleteChat(userId, chatId) {
-    const userHasExactChat = await this.doesChatExist(userId, chatId);
-
-    return userHasExactChat;
+    return await this.doesChatExist(userId, chatId);
   }
 
   async deleteChatById(userId, chatId) {
     const chats = await this.#readChats();
-    const userHasChats = userId in chats;
+    const isChatExisting = await this.doesChatExist(userId, chatId);
 
-    if (!userHasChats) {
-      throw new Error(`No user with id ${userId} found`);
+    if (!isChatExisting) {
+      throw new Error('Chat does not exist');
     }
 
-    const userHasChatWithId = chatId in chats[userId];
-
-    if (!userHasChatWithId) {
-      throw new Error(`No chat with id ${chatId} found`);
-    }
-
-    const currChat = chats[userId][chatId];
-
-    return chatsMapper(currChat, 'delete');
+    return chatsMapper(chats[userId][chatId], 'delete');
   }
 
   async updateChat(userId, chatId, updateData) {
     const chats = await this.#readChats();
+    const isChatExisting = await this.doesChatExist(userId, chatId);
 
-    try {
-      const userHasChatWithId = await this.doesChatExist(userId, chatId);
-
-      if (userHasChatWithId) {
-        chats[chatId] = {
-          ...chats[chatId],
-          ...updateData,
-        };
-      }
-    } catch (error) {
-      console.error(error);
+    if (!isChatExisting) {
       throw new Error('Chat not found');
     }
 
-    await this.#writeChats(chats);
+    chats[chatId] = {
+      ...chats[chatId],
+      ...updateData,
+    };
+
+    const isWritten = await this.#writeChats(chats);
+
+    if (!isWritten) {
+      throw new Error('Failed to write chats');
+    }
 
     return chatsMapper(currChat, 'update');
   }
 
   async getChatByChatId(userId, chatId) {
     const chats = await this.#readChats();
-    const userHasChatWithId = await this.doesChatExist(userId, chatId);
+    const isChatExisting = await this.doesChatExist(userId, chatId);
 
-    if (!userHasChatWithId) {
+    if (!isChatExisting) {
       throw new Error('Chat not found');
     }
 
@@ -99,7 +95,7 @@ export class ChatDao {
     const chats = await this.#readChats();
     const userHasChats = userId in chats;
 
-    return userHasChats ? chats[userId] : null;
+    return userHasChats ? Object.values(chats[userId]).map(chatsMapper) : null;
   }
 
   async #readChats() {

@@ -5,18 +5,12 @@ import EventEmitter from 'node:events';
 export class MessageService {
   constructor() {
     this.messagesDao = diContainer.resolve(SERVICES.messagesDao);
-    this.chatsDao = diContainer.resolve(SERVICES.chatsDao);
+    this.chatDao = diContainer.resolve(SERVICES.chatsDao);
     this.eventEmitter = new EventEmitter();
     this.subscribers = {};
   }
 
-  async createMessage(userId, chatId, messageData) {
-    const isChatExist = this.chatsDao.doesChatExist(userId, chatId);
-
-    if (!isChatExist) {
-      throw new Error('Chat not found');
-    }
-
+  async createMessage(chatId, messageData) {
     const newMessage = await this.messagesDao.createMessage(
       chatId,
       messageData

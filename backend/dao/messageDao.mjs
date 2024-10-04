@@ -76,20 +76,22 @@ export class MessagesDao {
     /*Такая обработка поможет избежать дублирования идентификаторов сообщений
      * И если юзер поймает ошибку, то при повторном создании сообщения будет сгенерен новый id
      */
-    const messageWithSameId = Object.values(messages).some(
-      (message) => message.messageId === messageId
-    );
+    const messageWithSameId =
+      chatId in messages && messageId in messages[chatId];
 
     if (messageWithSameId) {
       throw new Error(`Message with id: ${messageId} already exists`);
     }
+
     const newMessage = {
       ...messageData,
       timeStamp: new Date(),
       messageId,
     };
 
-    messages[chatId] = [...messages[chatId], newMessage];
+    messages[chatId] = messages[chatId] || {};
+    messages[chatId][messageId] = newMessage;
+
     const isWritten = await this.#writeMessages(messages);
 
     if (!isWritten) {

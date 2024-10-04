@@ -53,7 +53,7 @@ export class MessagesDao {
       throw new Error('Error while writting into a file');
     }
 
-    return userMapper(messages[chatId][messageId], 'update');
+    return messagesMapper(messages[chatId][messageId], 'update');
   }
 
   async deleteMessageById(chatId, messageId) {
@@ -68,6 +68,17 @@ export class MessagesDao {
       messages[chatId][messageId],
       messageStatusMapping.delete
     );
+  }
+
+  async restoreMessageById(chatId, messageId) {
+    const messages = await this.#readMessages();
+    const chatHasMessage = await this.#doesMessageExist(chatId, messageId);
+
+    if (!chatHasMessage) {
+      throw new Error('Message with this id does not exist');
+    }
+    //Явно передаем статус при ресторе
+    return messagesMapper(messages[chatId][messageId], 'active');
   }
 
   async createMessage(chatId, messageData) {
@@ -86,7 +97,7 @@ export class MessagesDao {
     const newMessage = {
       ...messageData,
       timeStamp: new Date(),
-      messageId,
+      id: messageId,
     };
 
     messages[chatId] = messages[chatId] || {};

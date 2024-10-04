@@ -43,7 +43,7 @@ export class MessageService {
   }
 
   async updateMessageById(chatId, messageId, content) {
-    const updatedMessage = await messagesDao.updateMessageById(
+    const updatedMessage = await this.messagesDao.updateMessageById(
       chatId,
       messageId,
       content
@@ -62,10 +62,19 @@ export class MessageService {
       chatId,
       messageId
     );
-
     this.notifyAll(chatId, deletedMessage);
 
     return deletedMessage;
+  }
+
+  async restoreMessageById(chatId, messageId) {
+    const restoredMessage = await this.messagesDao.restoreMessageById(
+      chatId,
+      messageId
+    );
+    this.notifyAll(chatId, restoredMessage);
+
+    return restoredMessage;
   }
 
   unsubscribe(chatId, res) {

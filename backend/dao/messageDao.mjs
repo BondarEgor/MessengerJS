@@ -14,9 +14,9 @@ export class MessagesDao {
 
   async getMessagesByChatId(chatId) {
     const messages = await this.#readMessages();
-    const doesChatExist = chatId in messages;
+    const isChatExisting = chatId in messages;
 
-    if (!doesChatExist) {
+    if (!isChatExisting) {
       throw new Error(`Chat with id: ${chatId} does not exist`);
     }
 
@@ -47,9 +47,13 @@ export class MessagesDao {
       content,
     };
 
-    await this.#writeMessages(messages);
+    const isWritten = await this.#writeMessages(messages);
 
-    return userMapper(messages[chatId][messageId], 'update');
+    if (!isWritten) {
+      throw new Error('Error while writting into a file');
+    }
+
+    return messagesMapper(messages[chatId][messageId], 'update');
   }
 
   async deleteMessageById(chatId, messageId) {
@@ -66,29 +70,46 @@ export class MessagesDao {
     );
   }
 
+  async restoreMessageById(chatId, messageId) {
+    const messages = await this.#readMessages();
+    const chatHasMessage = await this.#doesMessageExist(chatId, messageId);
+
+    if (!chatHasMessage) {
+      throw new Error('Message with this id does not exist');
+    }
+    //Явно передаем статус при ресторе
+    return messagesMapper(messages[chatId][messageId], 'active');
+  }
+
   async createMessage(chatId, messageData) {
     const messages = await this.#readMessages();
-
     const messageId = uuid();
     /*Такая обработка поможет избежать дублирования идентификаторов сообщений
      * И если юзер поймает ошибку, то при повторном создании сообщения будет сгенерен новый id
      */
-    if (messageId in messages[chatId]) {
+    const messageWithSameId = Object.values(messages).some(
+      (message) => message.messageId === messageId
+    );
+
+    if (messageWithSameId) {
       throw new Error(`Message with id: ${messageId} already exists`);
     }
-
-    messages[chatId] = {
-      ...messages[chatId],
-      [messageId]: {
-        ...messageData,
-        timeStamp: new Date(),
-        id: messageId,
-      },
+    const newMessage = {
+      ...messageData,
+      timeStamp: new Date(),
+      id: messageId,
     };
 
-    await this.#writeMessages(messages);
+    messages[chatId] = messages[chatId] || {};
+    messages[chatId][messageId] = newMessage;
 
-    return messagesMapper(messages[chatId][messageId]);
+    const isWritten = await this.#writeMessages(messages);
+
+    if (!isWritten) {
+      throw new Error('Error while writting into a file');
+    }
+
+    return messagesMapper(newMessage);
   }
 
   async #readMessages() {
@@ -119,9 +140,9 @@ export class MessagesDao {
 
   async #doesMessageExist(chatId, messageId) {
     const messages = await this.#readMessages();
-    const doesChatExist = chatId in messages;
+    const isChatExisting = chatId in messages;
     const doesMessageExistInChat = messageId in messages[chatId];
 
-    return doesChatExist && doesMessageExistInChat;
+    return isChatExisting && doesMessageExistInChat;
   }
 }

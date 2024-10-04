@@ -89,7 +89,7 @@ export function createMessageController(app) {
    */
 
   app.post(
-    '/api/v1/:chatId/message/',
+    '/api/v1/:chatId/messages/',
     authorContentValidator,
     authMiddleware,
     async (req, res) => {
@@ -273,6 +273,83 @@ export function createMessageController(app) {
         );
 
         return res.status(200).json(updatedMessage);
+      } catch (e) {
+        console.error(e);
+        return res.status(404).json({
+          message: e.message,
+        });
+      }
+    }
+  );
+
+  /**
+   * @swagger
+   * /api/v1/{chatId}/messages/{messageId}/restore:
+   *   put:
+   *     summary: Restore a deleted message in a chat
+   *     description: Restores a message by its ID within a specific chat.
+   *     parameters:
+   *       - in: path
+   *         name: chatId
+   *         required: true
+   *         description: The ID of the chat containing the message.
+   *         schema:
+   *           type: string
+   *       - in: path
+   *         name: messageId
+   *         required: true
+   *         description: The ID of the message to restore.
+   *         schema:
+   *           type: string
+   *     responses:
+   *       '200':
+   *         description: Message successfully restored.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 chatId:
+   *                   type: string
+   *                   description: The ID of the chat where the message was restored.
+   *                   example: "123"
+   *                 messageId:
+   *                   type: string
+   *                   description: The ID of the restored message.
+   *                   example: "456"
+   *                 author:
+   *                   type: string
+   *                   description: The author of the message.
+   *                   example: "John Doe"
+   *                 content:
+   *                   type: string
+   *                   description: The content of the restored message.
+   *                   example: "This is a restored message."
+   *                 timeStamp:
+   *                   type: string
+   *                   format: date-time
+   *                   description: The timestamp when the message was restored.
+   *                   example: "2024-10-03T10:00:00Z"
+   *       '404':
+   *         description: Message not found or unable to restore.
+   *       '500':
+   *         description: Internal server error.
+   */
+
+  app.put(
+    '/api/v1/:chatId/messages/:messageId/restore',
+    contentValidator,
+    authMiddleware,
+    async (req, res) => {
+      const { chatId, messageId } = req.params;
+
+      try {
+        const restoredMessage = await messageService.restoreMessageById(
+          chatId,
+          messageId
+        );
+
+        return res.status(200).json(restoredMessage);
       } catch (e) {
         console.error(e);
         return res.status(404).json({

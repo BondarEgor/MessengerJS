@@ -230,6 +230,63 @@ export function createChatController(app) {
 
   /**
    * @swagger
+   * /api/v1/chats/{chatId}/restore:
+   *   put:
+   *     summary: Restore a deleted chat
+   *     description: Restores a chat by its ID.
+   *     parameters:
+   *       - in: path
+   *         name: chatId
+   *         required: true
+   *         description: The ID of the chat to restore.
+   *         schema:
+   *           type: string
+   *     responses:
+   *       '200':
+   *         description: Chat successfully restored.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 chatId:
+   *                   type: string
+   *                   description: The ID of the restored chat.
+   *                   example: "123"
+   *                 name:
+   *                   type: string
+   *                   description: The name of the restored chat.
+   *                   example: "Project Discussion"
+   *                 members:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   *                   description: The members of the chat.
+   *                   example: ["user1", "user2"]
+   *       '404':
+   *         description: Chat not found or unable to restore.
+   *       '500':
+   *         description: Internal server error.
+   */
+
+  app.put('/api/v1/chats/:chatId/restore', authMiddleware, async (req, res) => {
+    const { chatId } = req.params;
+    const token = req.headers['authorization'];
+
+    try {
+      const { userId } = await sessionService.getSessionByToken(token);
+      const restoredChat = await chatService.restoreChatById(userId, chatId);
+
+      return res.status(200).json(restoredChat);
+    } catch (error) {
+      console.error(error);
+
+      return res.status(404).json({ error: error.message });
+    }
+  });
+
+  /**
+   * @swagger
    * /chats/{id}:
    *   put:
    *     summary: Update an existing chat

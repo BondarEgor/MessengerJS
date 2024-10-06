@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { ONE_DAY, PATHS } from '../constants.js';
+import { ONE_DAY, ONE_HOUR, PATHS } from '../constants.js';
 import bcrypt from 'bcrypt';
 
 const _filename = fileURLToPath(import.meta.url);
@@ -18,7 +18,7 @@ export class SessionDao {
     if (sessionHasToken) {
       return sessions[token];
     }
-
+    //FIXME: Нужно ли нам задуматься о нескольких сессиях для одного юзера, например с разных устройств
     sessions[token] = sessionData;
     const isWritten = await this.#writeSessions(sessions);
 
@@ -32,26 +32,30 @@ export class SessionDao {
   async generateSessionInfo(user) {
     const sessions = await this.#readSessions();
     const { userId } = user;
-    const session = Object.values(sessions).find(
+
+    const userHasSession = Object.values(sessions).find(
       (session) => session.userId === userId
     );
 
-    if (session) {
-      return sessions[session.token];
+    if (userHasSession) {
+      const { token } = userHasSession;
+
+      return sessions[token];
     }
 
-    const token = await this.generateToken(user);
-    const refreshToken = await this.generateToken(user);
+    const authToken = await this.#generateToken(user);
+    const refreshToken = await this.#generateToken(user);
 
     return await this.createSession({
       userId,
-      token,
+      token: authToken,
       refreshToken,
-      expirationTime: new Date().getTime() + ONE_DAY,
+      tokenExpireTime: new Date().getTime() + ONE_HOUR,
+      refreshExpireTime: new Date().getTime() + ONE_DAY,
     });
   }
 
-  async generateToken(userData) {
+  async #generateToken(userData) {
     const combinedValues = Object.values(userData).join('-');
     const saltRounds = 10;
 
@@ -60,62 +64,65 @@ export class SessionDao {
 
   async isTokenValid(token) {
     const sessions = await this.#readSessions();
-    const doesSessionExist = token in sessions;
+    const userHasSession = token in sessions;
 
-    if (!doesSessionExist) {
-      return false;
+    if (!userHasSession) {
+      throw new Error('Token not valid');
     }
 
-    const isTokenExpired = this.isExpired(token);
+    const { refreshToken, tokenExpireTime, refreshExpireTime } =
+      await this.getSessionByToken(token);
+    const isTokenExpired = this.#isExpired(tokenExpireTime);
 
     if (isTokenExpired) {
-      const { refreshToken } = await this.getSessionByToken(token);
-
       if (!refreshToken) {
         throw new Error('No refresh token');
       }
 
-      return await this.updateSession(token);
+      const isRefreshExpired = this.#isExpired(refreshExpireTime);
+
+      if (isRefreshExpired) {
+        return { valid: false, message: 'Refresh token expired' };
+      }
+
+      const newSession = await this.#updateSession(token);
+
+      return { valid: true, updated: true, session: newSession };
     }
 
-    return true;
+    return { valid: true, updated: false };
   }
 
-  isExpired({ expirationTime }) {
+  #isExpired(expireTime) {
     const currentTime = new Date().getTime();
 
-    return expirationTime > currentTime;
+    return currentTime > expireTime;
   }
 
-  async updateSession(token) {
+  async #updateSession(token) {
     const sessions = await this.#readSessions();
-    /*TODO:Порефакторить обновление сессии
-     * https://github.com/users/BondarEgor/projects/1?pane=issue&itemId=81300820
-     */
-    if (!(token in sessions)) {
-      throw new Error('No token found');
-    }
-
     const sessionInfo = sessions[token];
-    const newToken = await this.generateToken(sessionInfo);
-    const refreshToken = await this.generateToken(sessionInfo);
+    const newToken = await this.#generateToken(sessionInfo);
+    const refreshToken = await this.#generateToken(sessionInfo);
 
     const updatedSessinInfo = {
       ...sessionInfo,
       token: newToken,
       refreshToken,
-      expirationTime: new Date().getTime() + ONE_DAY,
+      tokenExpireTime: new Date().getTime() + ONE_DAY,
+      refreshExpireTime: new Date().getTime() + ONE_HOUR,
     };
+
     delete sessions[token];
 
     sessions[newToken] = updatedSessinInfo;
     const isWritten = await this.#writeSessions(sessions);
 
     if (!isWritten) {
-      throw new Error('Failed to write sesions');
+      throw new Error('Failed to write session, try again');
     }
 
-    return sessions[newToken];
+    return { token: newToken, refreshToken };
   }
 
   async getSessionByToken(token) {

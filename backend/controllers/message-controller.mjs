@@ -96,9 +96,9 @@ export function createMessageController(app) {
       const { chatId } = req.params;
 
       try {
-        const { userId } = await sessionService.getSessionByToken(
-          req.headers['authorization']
-        );
+        const token = req.headers['authorization'] || req.authToken;
+        const { userId } = await sessionService.getSessionByToken(token);
+
         const chat = await chatService.getChatByChatId(userId, chatId);
 
         if (!chat) {

@@ -12,7 +12,7 @@ export async function authMiddleware(req, res, next) {
   try {
     const { valid, updated, message, session } =
       await sessionService.isTokenValid(authToken);
-    console.log(valid);
+
     if (!valid) {
       return res.status(401).json({ message });
     }

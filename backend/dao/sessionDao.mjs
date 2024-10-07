@@ -82,7 +82,7 @@ export class SessionDao {
       const isRefreshExpired = this.#isExpired(refreshExpireTime);
 
       if (isRefreshExpired) {
-        return { valid: false, message: 'Refresh token expired' };
+        throw new Error('Refresh token expired, try to log in');
       }
 
       const newSession = await this.#updateSession(token);
@@ -90,10 +90,14 @@ export class SessionDao {
       return { valid: true, updated: true, session: newSession };
     }
 
-    return { valid: true, updated: false };
+    return { valid: true, updated: false, session: sessions[token] };
   }
 
   #isExpired(expireTime) {
+    if (!expireTime) {
+      throw new Error('No expire time');
+    }
+
     const currentTime = new Date().getTime();
 
     return currentTime > expireTime;

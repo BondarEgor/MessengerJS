@@ -48,8 +48,9 @@ export function createAuthController(app) {
 
     try {
       const user = await authService.authorizeUser(email, password);
-
       const userSessionInfo = await sessionService.generateSessionInfo(user);
+
+      res.setHeader('Authorization', userSessionInfo.token);
 
       return res.status(200).json(userSessionInfo);
     } catch (error) {

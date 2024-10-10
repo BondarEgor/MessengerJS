@@ -57,8 +57,8 @@ export class MessageService {
     this.eventEmitter.emit(chatId, data);
   }
 
-  async deleteMessageById(chatId, messageId) {
-    const deletedMessage = await this.messagesDao.deleteMessageById(
+  async softDeleteMessageById(chatId, messageId) {
+    const deletedMessage = await this.messagesDao.softDeleteMessageById(
       chatId,
       messageId
     );

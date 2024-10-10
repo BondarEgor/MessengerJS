@@ -399,7 +399,7 @@ export function createMessageController(app) {
       const { chatId, messageId } = req.params;
 
       try {
-        const deletedMessageId = await messageService.deleteMessageById(
+        const deletedMessageId = await messageService.softDeleteMessageById(
           chatId,
           messageId
         );

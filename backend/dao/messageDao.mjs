@@ -55,8 +55,8 @@ export class MessagesDao {
 
     return messagesMapper(messages[chatId][messageId], 'update');
   }
-
-  async deleteMessageById(chatId, messageId) {
+  //Метод для soft удаления и просто пропуска через ДТО, с возможностью рестора
+  async softDeleteMessageById(chatId, messageId) {
     const messages = await this.#readMessages();
     const chatHasMessage = await this.#doesMessageExist(chatId, messageId);
 
@@ -68,6 +68,25 @@ export class MessagesDao {
       messages[chatId][messageId],
       messageStatusMapping.delete
     );
+  }
+  //Метод для удаления сообщения навсегда из БД, без возможности рестора
+  async hardDeleteMessageById(chatId, messageId) {
+    const messages = await this.#readMessages();
+    const chatHasMessage = await this.#doesMessageExist(chatId, messageId);
+
+    if (!chatHasMessage) {
+      throw new Error('Message with this id does not exist');
+    }
+
+    delete messages[chatId][messageId];
+
+    const isWritten = await this.#writeMessages(messages);
+
+    if (!isWritten) {
+      throw new Error('Error while writting into a file');
+    }
+
+    return true;
   }
 
   async restoreMessageById(chatId, messageId) {

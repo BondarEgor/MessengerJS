@@ -55,7 +55,7 @@ export class MessagesDao {
 
     return messagesMapper(messages[chatId][messageId], 'update');
   }
-  //Метод для soft удаления и просто пропуска через ДТО, с возможностью рестора
+
   async softDeleteMessageById(chatId, messageId) {
     const messages = await this.#readMessages();
     const chatHasMessage = await this.#doesMessageExist(chatId, messageId);
@@ -69,7 +69,7 @@ export class MessagesDao {
       messageStatusMapping.delete
     );
   }
-  //Метод для удаления сообщения навсегда из БД, без возможности рестора
+
   async hardDeleteMessageById(chatId, messageId) {
     const messages = await this.#readMessages();
     const chatHasMessage = await this.#doesMessageExist(chatId, messageId);
@@ -96,16 +96,14 @@ export class MessagesDao {
     if (!chatHasMessage) {
       throw new Error('Message with this id does not exist');
     }
-    //Явно передаем статус при ресторе
+
     return messagesMapper(messages[chatId][messageId], 'active');
   }
 
   async createMessage(chatId, messageData) {
     const messages = await this.#readMessages();
     const messageId = uuid();
-    /*Такая обработка поможет избежать дублирования идентификаторов сообщений
-     * И если юзер поймает ошибку, то при повторном создании сообщения будет сгенерен новый id
-     */
+
     const messageWithSameId =
       chatId in messages && messageId in messages[chatId];
 

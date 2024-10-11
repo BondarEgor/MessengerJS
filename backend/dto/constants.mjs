@@ -13,14 +13,14 @@ export const userRoleMapping = {
 
 export const chatStatusMapping = {
   active: 'active',
-  delete: 'deleted',
-  update: 'updated',
+  delete: 'delete',
+  update: 'update',
   default: 'active',
 };
 
 export const messageStatusMapping = {
   active: 'active',
-  delete: 'deleted',
-  update: 'updated',
+  delete: 'delete',
+  update: 'update',
   default: 'active',
 };

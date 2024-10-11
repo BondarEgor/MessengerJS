@@ -58,6 +58,17 @@ export class ChatDao {
     return chatsMapper(chats[userId][chatId], 'delete');
   }
 
+  async restoreChatById(userId, chatId) {
+    const chats = await this.#readChats();
+    const isChatExisting = await this.doesChatExist(userId, chatId);
+
+    if (!isChatExisting) {
+      throw new Error('Chat not found');
+    }
+
+    return chatsMapper(chats[userId][chatId], 'active');
+  }
+
   async updateChat(userId, chatId, updateData) {
     const chats = await this.#readChats();
     const isChatExisting = await this.doesChatExist(userId, chatId);
@@ -77,7 +88,7 @@ export class ChatDao {
       throw new Error('Failed to write chats');
     }
 
-    return chatsMapper(currChat, 'update');
+    return chatsMapper(chats[userId][chatId], 'update');
   }
 
   async getChatByChatId(userId, chatId) {

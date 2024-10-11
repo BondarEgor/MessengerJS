@@ -14,7 +14,7 @@ export class UserDao {
   async createUser(userData) {
     const users = (await this.#readUsers()) || {};
     const { email } = userData;
-    //Здесь мы хотим проверить по почте, тк почта - уникальное поле
+
     const userAlreadyExists = await this.getUserByEmail(email);
 
     if (userAlreadyExists) {

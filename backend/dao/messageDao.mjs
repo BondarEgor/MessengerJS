@@ -53,10 +53,10 @@ export class MessagesDao {
       throw new Error('Error while writting into a file');
     }
 
-    return userMapper(messages[chatId][messageId], 'update');
+    return messagesMapper(messages[chatId][messageId], 'update');
   }
 
-  async deleteMessageById(chatId, messageId) {
+  async softDeleteMessageById(chatId, messageId) {
     const messages = await this.#readMessages();
     const chatHasMessage = await this.#doesMessageExist(chatId, messageId);
 
@@ -70,12 +70,40 @@ export class MessagesDao {
     );
   }
 
+  async hardDeleteMessageById(chatId, messageId) {
+    const messages = await this.#readMessages();
+    const chatHasMessage = await this.#doesMessageExist(chatId, messageId);
+
+    if (!chatHasMessage) {
+      throw new Error('Message with this id does not exist');
+    }
+
+    delete messages[chatId][messageId];
+
+    const isWritten = await this.#writeMessages(messages);
+
+    if (!isWritten) {
+      throw new Error('Error while writting into a file');
+    }
+
+    return true;
+  }
+
+  async restoreMessageById(chatId, messageId) {
+    const messages = await this.#readMessages();
+    const chatHasMessage = await this.#doesMessageExist(chatId, messageId);
+
+    if (!chatHasMessage) {
+      throw new Error('Message with this id does not exist');
+    }
+
+    return messagesMapper(messages[chatId][messageId], 'active');
+  }
+
   async createMessage(chatId, messageData) {
     const messages = await this.#readMessages();
     const messageId = uuid();
-    /*Такая обработка поможет избежать дублирования идентификаторов сообщений
-     * И если юзер поймает ошибку, то при повторном создании сообщения будет сгенерен новый id
-     */
+
     const messageWithSameId =
       chatId in messages && messageId in messages[chatId];
 
@@ -86,7 +114,7 @@ export class MessagesDao {
     const newMessage = {
       ...messageData,
       timeStamp: new Date(),
-      messageId,
+      id: messageId,
     };
 
     messages[chatId] = messages[chatId] || {};

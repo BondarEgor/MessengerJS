@@ -47,7 +47,7 @@ export class ChatDao {
     return await this.doesChatExist(userId, chatId);
   }
 
-  async deleteChatById(userId, chatId) {
+  async softDeleteChatById(userId, chatId) {
     const chats = await this.#readChats();
     const isChatExisting = await this.doesChatExist(userId, chatId);
 
@@ -56,6 +56,25 @@ export class ChatDao {
     }
 
     return chatsMapper(chats[userId][chatId], 'delete');
+  }
+
+  async hardDeleteChatById(userId, chatId) {
+    const chats = await this.#readChats();
+    const isChatExisting = await this.doesChatExist(userId, chatId);
+
+    if (!isChatExisting) {
+      throw new Error('Chat does not exist');
+    }
+
+    delete chats[userId][chatId];
+
+    const isWritten = await this.#writeChats(chats);
+
+    if (!isWritten) {
+      throw new Error('Error while writting chats');
+    }
+
+    return true;
   }
 
   async restoreChatById(userId, chatId) {

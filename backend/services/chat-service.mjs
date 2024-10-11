@@ -35,7 +35,7 @@ export class ChatService {
   }
 
   async deleteChat(userId, chatId) {
-    const deletedChat = await this.chatDao.deleteChatById(userId, chatId);
+    const deletedChat = await this.chatDao.softDeleteChatById(userId, chatId);
     this.notifyAll(userId, deletedChat);
 
     return deletedChat;

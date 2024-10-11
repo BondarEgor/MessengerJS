@@ -20,7 +20,11 @@ export class SessionDao {
     }
 
     sessions[token] = sessionData;
-    await this.#writeSessions(sessions);
+    const isWritten = await this.#writeSessions(sessions);
+
+    if (!isWritten) {
+      throw new Error('Failed to write sesions');
+    }
 
     return sessions[token];
   }
@@ -28,12 +32,12 @@ export class SessionDao {
   async generateSessionInfo(user) {
     const sessions = await this.#readSessions();
     const { userId } = user;
-    const existingSession = Object.values(sessions).find(
+    const session = Object.values(sessions).find(
       (session) => session.userId === userId
     );
 
-    if (existingSession) {
-      return sessions[existingSession.token];
+    if (session) {
+      return sessions[session.token];
     }
 
     const token = await this.generateToken(user);
@@ -52,12 +56,6 @@ export class SessionDao {
     const saltRounds = 10;
 
     return await bcrypt.hash(combinedValues, saltRounds);
-  }
-
-  async isUserIdValid(userId) {
-    const sessions = await this.#readSessions();
-
-    return Object.values(sessions).some((session) => session.userId === userId);
   }
 
   async isTokenValid(token) {
@@ -111,7 +109,11 @@ export class SessionDao {
     delete sessions[token];
 
     sessions[newToken] = updatedSessinInfo;
-    await this.#writeSessions(sessions);
+    const isWritten = await this.#writeSessions(sessions);
+
+    if (!isWritten) {
+      throw new Error('Failed to write sesions');
+    }
 
     return sessions[newToken];
   }
@@ -130,7 +132,11 @@ export class SessionDao {
   async deleteSessionById(userId) {
     const sessions = await this.#readSessions();
     const deletedSession = delete sessions[userId];
-    await this.#writeSessions(sessions);
+    const isWritten = await this.#writeSessions(sessions);
+
+    if (!isWritten) {
+      throw new Error('Failed to write sesions');
+    }
 
     return deletedSession;
   }

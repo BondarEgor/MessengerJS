@@ -52,7 +52,7 @@ export class ChatService {
     return updatedChat;
   }
 
-  async getChatByChatId(userId, chatId) {
+  async getChatById(userId, chatId) {
     return await this.chatDao.getChatByChatId(userId, chatId);
   }
 

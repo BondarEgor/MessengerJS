@@ -65,7 +65,7 @@ export class ChatDao {
     if (!isChatExisting) {
       throw new Error('Chat not found');
     }
-    //Поставил статус active явно, чтобы было понятно, что ресторим и переводим в статус
+
     return chatsMapper(chats[userId][chatId], 'active');
   }
 

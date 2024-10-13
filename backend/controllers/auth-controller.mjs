@@ -56,7 +56,7 @@ export function createAuthController(app) {
     } catch (error) {
       console.error(error);
 
-      return res.status(401).json({ error: error.message });
+      return res.status(401).json({ error: error.stack });
     }
   });
 }

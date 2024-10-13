@@ -85,14 +85,13 @@ export function createChatController(app) {
 
   app.post(
     '/api/v1/chats',
-    typeDescNameValidator,
     authMiddleware,
+    typeDescNameValidator,
     async (req, res) => {
-      try {
-        const { userId } = await sessionService.getSessionByToken(
-          req.headers['authorization']
-        );
+      const token = res.locals.authToken || req.headers['authorization'];
 
+      try {
+        const { userId } = await sessionService.getSessionByToken(token);
         const newChat = await chatService.createChat(userId, req.body);
 
         if (!newChat) {
@@ -115,11 +114,10 @@ export function createChatController(app) {
       'Cache-Control': 'no-cache',
       Connection: 'keep-alive',
     });
+    const token = res.locals.authToken || req.headers['authorization'];
 
     try {
-      const { userId } = await sessionService.getSessionByToken(
-        req.headers['authorization']
-      );
+      const { userId } = await sessionService.getSessionByToken(token);
 
       chatService.createChatStream(userId, res);
     } catch (error) {
@@ -204,11 +202,11 @@ export function createChatController(app) {
    */
 
   app.delete('/api/v1/chats/:chatId', authMiddleware, async (req, res) => {
+    const { chatId } = req.params;
+    const token = res.locals.authToken || req.headers['authorization'];
+
     try {
-      const { chatId } = req.params;
-      const { userId } = await sessionService.getSessionByToken(
-        req.headers['authorization']
-      );
+      const { userId } = await sessionService.getSessionByToken(token);
       const isChatDeleteAllowed = await chatService.canUserDeleteChat(
         userId,
         chatId
@@ -271,7 +269,7 @@ export function createChatController(app) {
 
   app.put('/api/v1/chats/:chatId/restore', authMiddleware, async (req, res) => {
     const { chatId } = req.params;
-    const token = req.headers['authorization'];
+    const token = res.locals.authToken || req.headers['authorization'];
 
     try {
       const { userId } = await sessionService.getSessionByToken(token);
@@ -363,11 +361,11 @@ export function createChatController(app) {
    */
 
   app.put('/api/v1/chats/:chatId', authMiddleware, async (req, res) => {
+    const { chatId } = req.params;
+    const token = res.locals.authToken || req.headers['authorization'];
+
     try {
-      const { chatId } = req.params;
-      const { userId } = await sessionService.getSessionByToken(
-        req.headers['authorization']
-      );
+      const { userId } = await sessionService.getSessionByToken(token);
       const updatedChat = await chatService.updateChat(
         userId,
         chatId,
@@ -437,11 +435,11 @@ export function createChatController(app) {
    */
 
   app.get('/api/v1/chats/:chatId', authMiddleware, async (req, res) => {
+    const { chatId } = req.params;
+    const token = res.locals.authToken || req.headers['authorization'];
+
     try {
-      const { chatId } = req.params;
-      const { userId } = await sessionService.getSessionByToken(
-        req.headers['authorization']
-      );
+      const { userId } = await sessionService.getSessionByToken(token);
       const chatByChatId = await chatService.getChatById(userId, chatId);
 
       return res.status(200).json(chatByChatId);

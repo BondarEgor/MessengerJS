@@ -72,6 +72,7 @@ export class SessionDao {
 
     const { refreshToken, tokenExpireTime, refreshExpireTime } =
       await this.getSessionByToken(token);
+
     const isTokenExpired = this.#isExpired(tokenExpireTime);
 
     if (isTokenExpired) {
@@ -82,6 +83,9 @@ export class SessionDao {
       const isRefreshExpired = this.#isExpired(refreshExpireTime);
 
       if (isRefreshExpired) {
+        delete sessions[token];
+        await this.#writeSessions(sessions);
+
         throw new Error('Refresh token expired, try to log in');
       }
 

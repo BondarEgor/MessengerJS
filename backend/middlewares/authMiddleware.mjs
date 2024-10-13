@@ -19,7 +19,7 @@ export async function authMiddleware(req, res, next) {
 
     if (updated && session) {
       res.setHeader('authorization', session.token);
-      req.authToken = session.token;
+      res.locals.authToken = session.token;
     }
 
     next();

@@ -18,7 +18,7 @@ export class SessionDao {
     if (sessionHasToken) {
       return sessions[token];
     }
-    //FIXME: Нужно ли нам задуматься о нескольких сессиях для одного юзера, например с разных устройств
+
     sessions[token] = sessionData;
     const isWritten = await this.#writeSessions(sessions);
 

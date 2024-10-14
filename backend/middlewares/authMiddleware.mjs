@@ -10,10 +10,16 @@ export async function authMiddleware(req, res, next) {
   }
 
   try {
-    const valid = await sessionService.isTokenValid(authToken);
+    const { valid, updated, message, session } =
+      await sessionService.isTokenValid(authToken);
 
     if (!valid) {
-      return res.status(401).json({ message: 'Token not valid' });
+      return res.status(401).json({ message });
+    }
+
+    if (updated && session) {
+      res.setHeader('authorization', session.token);
+      res.locals.authToken = session.token;
     }
 
     next();

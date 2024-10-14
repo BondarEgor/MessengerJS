@@ -94,11 +94,10 @@ export function createMessageController(app) {
     authMiddleware,
     async (req, res) => {
       const { chatId } = req.params;
+      const token = res.locals.authToken || req.headers['authorization'];
 
       try {
-        const { userId } = await sessionService.getSessionByToken(
-          req.headers['authorization']
-        );
+        const { userId } = await sessionService.getSessionByToken(token);
         const chat = await chatService.getChatById(userId, chatId);
 
         if (!chat) {
